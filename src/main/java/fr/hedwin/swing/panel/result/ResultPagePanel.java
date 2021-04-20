@@ -23,6 +23,7 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 
+@SuppressWarnings("unchecked")
 public class ResultPagePanel<T> extends ResultPanel<ResultsPage<T>> {
 
     private JTabbedPane tabbedPane;
