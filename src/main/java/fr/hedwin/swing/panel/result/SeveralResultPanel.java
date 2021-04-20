@@ -15,6 +15,8 @@ import fr.hedwin.db.object.ResultsPage;
 import fr.hedwin.swing.other.LoadDataBar;
 import fr.hedwin.swing.panel.result.properties.ResultEnumProperties;
 import fr.hedwin.swing.panel.result.properties.ResultPanelProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,12 +24,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 public class SeveralResultPanel<T> extends ResultPanel<Results<T>> {
 
     private final ResultPanelProperties<T> resultPanelProperties;
     private Map<Integer, ResultPagePanel<T>> pagePanel;
     private int actualPage;
     private JLabel pageLabel;
+
+    private static Logger logger = LoggerFactory.getLogger(SeveralResultPanel.class);
 
     public SeveralResultPanel(Results<T> result, LoadDataBar loadDataBar) throws Exception {
         this(result, loadDataBar, null);
@@ -97,10 +102,10 @@ public class SeveralResultPanel<T> extends ResultPanel<Results<T>> {
             if(page == 1) {
                 try {
                     pagePanel.put(page, new ResultPagePanel<>(fraction, this, result.getFirstPage(), getLoadDataBar()));
+                    openPage(page);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("Impossible de générer un panel d'une page :", e);
                 }
-                openPage(page);
             }
             else{
                 if(page <= 0 || page > result.getTotalPage()) return;

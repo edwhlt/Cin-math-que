@@ -7,7 +7,8 @@
 
 package fr.hedwin.swing.panel;
 
-import fr.hedwin.db.SortBy;
+import fr.hedwin.db.model.MovieSortBy;
+import fr.hedwin.db.model.SerieSortBy;
 import fr.hedwin.db.model.IdElement;
 import fr.hedwin.db.model.TmdbElement;
 import fr.hedwin.db.object.DbSerie;
@@ -33,9 +34,12 @@ public class SearchPanel extends JPanel {
 
     private final JList<RequestListForm> jlist;
     private final FormSingleEntry<String> nameEntry;
-    private final FormListEntry<Genre> genresEntry;
     private final FormSingleEntry<String> personsEntry;
-    private final FormSingleEntry<SortBy> sortByEntry;
+    private final FormSingleEntry<Integer> yearsEntry;
+    private final FormListEntry<Genre> genresMovieEntry;
+    private final FormListEntry<Genre> genresSerieEntry;
+    private final FormSingleEntry<MovieSortBy> movieSortByEntry;
+    private final FormSingleEntry<SerieSortBy> serieSortByEntry;
     private IHM ihm;
 
     public SearchPanel(IHM ihm) {
@@ -51,12 +55,18 @@ public class SearchPanel extends JPanel {
 
         FormSingleEntry<String> name = new FormSingleEntry<>("VALEUR", null, s->s, s->s);
         this.nameEntry = name;
-        FormListEntry<Genre> genres = new FormListEntry<>("GENRES", null, Genre::getName, TMDB.getGenresSorted().toArray(new Genre[]{}));
-        this.genresEntry = genres;
+        FormListEntry<Genre> genresMovie = new FormListEntry<>("GENRES", null, Genre::getName, TMDB.getGenresMovieSorted().toArray(new Genre[]{}));
+        this.genresMovieEntry = genresMovie;
+        FormListEntry<Genre> genresSerie = new FormListEntry<>("GENRES", null, Genre::getName, TMDB.getGenresSerieSorted().toArray(new Genre[]{}));
+        this.genresSerieEntry = genresMovie;
         FormSingleEntry<String> persons = new FormSingleEntry<>("ACTEUR(S)", null, s->s, s->s);
         this.personsEntry = persons;
-        FormSingleEntry<SortBy> sortBy = new FormSingleEntry<>("TRIER PAR", null, SortBy::getName, SortBy::getSortByName, s -> true, FormSingleEntry.Type.COMBOBOX, SortBy.values());
-        this.sortByEntry = sortBy;
+        FormSingleNumberEntry years = new FormSingleNumberEntry("ANNéE", null);
+        this.yearsEntry = years;
+        FormSingleEntry<MovieSortBy> movieSortBy = new FormSingleEntry<>("TRIER PAR", MovieSortBy.getDefault(), MovieSortBy::getName, MovieSortBy::getSortByName, s -> true, FormSingleEntry.Type.COMBOBOX, MovieSortBy.values());
+        this.movieSortByEntry = movieSortBy;
+        FormSingleEntry<SerieSortBy> serieSortBy = new FormSingleEntry<>("TRIER PAR", SerieSortBy.getDefault(), SerieSortBy::getName, SerieSortBy::getSortByName, s -> true, FormSingleEntry.Type.COMBOBOX, SerieSortBy.values());
+        this.serieSortByEntry = serieSortBy;
 
         RequestListForm[] items = {
                 new ListCategorie("Recherche"),
@@ -71,7 +81,9 @@ public class SearchPanel extends JPanel {
                 new RequestListForm(formPanel, "Id de série TV", () -> generatePanel(jSplitPane, TMDB.getTvSeries(Integer.parseInt(name.getValue()))), name),
                 new ListCategorie("Découvrir"),
                 new RequestListForm(formPanel, "Films",
-                        () -> generatePanel(jSplitPane, TMDB.discoverMovie(sortBy.getValue(), genres.getValue(), persons.getValue())), persons, sortBy, genres)
+                        () -> generatePanel(jSplitPane, TMDB.discoverMovie(movieSortBy.getValue(), years.getValue(), genresMovie.getValue(), persons.getValue())), persons, movieSortBy, years, genresMovie),
+                new RequestListForm(formPanel, "Série TV",
+                        () -> generatePanel(jSplitPane, TMDB.discoverSeries(serieSortBy.getValue(), years.getValue(), genresSerie.getValue())), serieSortBy, years, genresSerie)
         };
 
         JScrollPane jScrollPane = new JScrollPane();
@@ -137,21 +149,32 @@ public class SearchPanel extends JPanel {
         });
     }
 
-
     public FormSingleEntry<String> getNameEntry() {
         return nameEntry;
     }
 
-    public FormListEntry<Genre> getGenresEntry() {
-        return genresEntry;
+    public FormListEntry<Genre> getGenresMovieEntry() {
+        return genresMovieEntry;
+    }
+
+    public FormListEntry<Genre> getGenresSerieEntry() {
+        return genresSerieEntry;
+    }
+
+    public FormSingleEntry<MovieSortBy> getMovieSortByEntry() {
+        return movieSortByEntry;
+    }
+
+    public FormSingleEntry<SerieSortBy> getSerieSortByEntry() {
+        return serieSortByEntry;
     }
 
     public FormSingleEntry<String> getPersonsEntry() {
         return personsEntry;
     }
 
-    public FormSingleEntry<SortBy> getSortByEntry() {
-        return sortByEntry;
+    public FormSingleEntry<Integer> getYearsEntry() {
+        return yearsEntry;
     }
 
     public JList<RequestListForm> getJlist() {

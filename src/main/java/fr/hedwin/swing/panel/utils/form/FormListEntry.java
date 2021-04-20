@@ -18,12 +18,16 @@ import java.util.function.IntFunction;
 
 public class FormListEntry<T> extends FormEntry<T, List<T>> {
 
-
     private JList<T> jList;
 
     @SafeVarargs
     public FormListEntry(String label, T value, Function<T, String> setter, T... options) {
-        super(label, value, setter, null, (r) -> r != null && !r.isEmpty(), options);
+        this(label, value, setter, (r) -> true, options);
+    }
+
+    @SafeVarargs
+    public FormListEntry(String label, T value, Function<T, String> setter, Function<List<T>, Boolean> conditionOnResult, T... options) {
+        super(label, value, setter, null, conditionOnResult, options);
         initComponents();
     }
 

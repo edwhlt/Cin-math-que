@@ -23,7 +23,9 @@ public class TmdbURL {
     public static final String SEARCH_PERSON = "search/person";
     public static final String SEARCH_TVSERIE = "search/tv";
     public static final String DISCORDER_MOVIE = "discover/movie";
+    public static final String DISCORDER_SERIES = "discover/tv";
     public static final String GENRES_MOVIE = "genre/movie/list";
+    public static final String GENRES_SERIES = "genre/tv/list";
     public static final String FIND = "find/";
 
 

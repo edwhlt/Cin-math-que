@@ -8,6 +8,7 @@
 package fr.hedwin.swing;
 
 import fr.hedwin.Main;
+import fr.hedwin.swing.other.LoadDataBar;
 import fr.hedwin.swing.panel.utils.form.Form;
 import fr.hedwin.swing.panel.utils.form.FormActionEntry;
 import fr.hedwin.swing.panel.utils.form.FormEntryPassword;
@@ -17,6 +18,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static fr.hedwin.Main.loadDatas;
 
@@ -35,15 +38,22 @@ public class IHMLogin extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
 
+        LoadDataBar loadDataBar = new LoadDataBar();
+        loadDataBar.initialize();
+
         FormSingleEntry<String> name = new FormSingleEntry<>("IDENTIFIANT", null, s->s, s->s);
         FormEntryPassword pass = new FormEntryPassword("MOT_DE_PASSE", null);
-        FormActionEntry login = new FormActionEntry("CONNEXION", () -> {
+        FormActionEntry login = new FormActionEntry("CONNEXION");
+        login.setValue(() -> {
             if(!(name.getValue().equals("edwin") && pass.getValue().equals("admin"))) {
                 throw new Exception("Identifiant ou mot de passe incorrect !");
             }
             //OUVERTURE DE LA FENETRE
+
+
             IHM ihm = new IHM();
             ihm.setVisible(true);
+            loadDataBar.close();
             dispose();
 
             //CHARGEMENT DES DONNEES
@@ -55,11 +65,10 @@ public class IHMLogin extends JFrame {
             JOptionPane.showMessageDialog(this, e.getMessage(), e.getMessage(), JOptionPane.WARNING_MESSAGE);
             logger.error("Erreur connection : ", e);
         });
-        FormActionEntry singin = new FormActionEntry("INSCRIPTION", () -> {
-
-        }, (e) -> {});
+        FormActionEntry singin = new FormActionEntry("INSCRIPTION", () -> {}, (e) -> {});
         Form form = new Form("Login", name, pass, login, singin);
         form.setPreferredSize(new Dimension(250, 200));
+        add(loadDataBar);
         add(form);
         pack();
         setLocationRelativeTo(null);

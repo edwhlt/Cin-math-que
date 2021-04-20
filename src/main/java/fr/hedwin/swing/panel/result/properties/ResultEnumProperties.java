@@ -9,7 +9,7 @@ package fr.hedwin.swing.panel.result.properties;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import fr.hedwin.db.Results;
-import fr.hedwin.db.SortBy;
+import fr.hedwin.db.model.MovieSortBy;
 import fr.hedwin.db.object.*;
 import fr.hedwin.db.utils.CompletableFuture;
 import fr.hedwin.db.utils.Future;
@@ -18,7 +18,6 @@ import fr.hedwin.db.model.NamedIdElement;
 import fr.hedwin.swing.IHM;
 import fr.hedwin.swing.jlist.RequestListForm;
 import fr.hedwin.swing.panel.SearchPanel;
-import fr.hedwin.swing.panel.utils.form.FormListEntry;
 import fr.hedwin.swing.panel.utils.table.Column;
 import fr.hedwin.swing.panel.utils.table.ColumnAction;
 import fr.hedwin.swing.panel.utils.table.ColumnObject;
@@ -122,9 +121,10 @@ public class ResultEnumProperties {
                                 SearchPanel searchPanel = IHM.INSTANCE.getSearchPanel();
                                 JList<RequestListForm> jList = searchPanel.getJlist();
                                 jList.setSelectedIndex(11);
-                                searchPanel.getGenresEntry().setValue(genre);
+                                searchPanel.getGenresMovieEntry().setValue(genre);
                                 searchPanel.getPersonsEntry().setValue("");
-                                searchPanel.getSortByEntry().setValue(SortBy.nothing);
+                                searchPanel.getMovieSortByEntry().setValue(MovieSortBy.getDefault());
+                                searchPanel.getYearsEntry().setValue(null);
                                 try {
                                     jList.getSelectedValue().actionSucess().getValue().run();
                                 } catch (Exception e) {
@@ -147,13 +147,14 @@ public class ResultEnumProperties {
             Person person = (Person) t;
             return new ResultElementPanel<>(fraction, person, loadDataBar).setImage(person.getProfilePath())
                     .addElementEntry("Identifiant :", person.getId())
-                    .addElementEntry("Titre :", person.getName())
+                    .addElementEntry("Nom :", person.getName())
+                    .addElementEntry("Sexe :", person.getGender().getString())
                     .addElementEntry("Biographie :", person.getBiography())
                     .addElementEntry("Date de naissance :", person.getBirthday())
-                    .addButton("Films", "A joué dans les films", () -> {
+                    .addButton(new FlatSVGIcon("images/recording_2_dark.svg"), "A joué dans les films", () -> {
                         loadDataBar.initialize();
                         Consumer<ResultPanel<?>> openDialog = (panel) -> new ResultsDialog(IHM.INSTANCE, "Film de "+person.getName(), true, panel).setVisible(true);
-                        ResultEnumProperties.getPanelElementFuture(1, TMDB.discoverMovie(null, (String) null, person.getId()+""), loadDataBar).then(openDialog);
+                        ResultEnumProperties.getPanelElementFuture(1, TMDB.discoverMovie(null, null, (String) null, person.getId()+""), loadDataBar).then(openDialog);
                     });
         }
         else if(t instanceof DbSerie){

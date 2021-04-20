@@ -53,13 +53,14 @@ public class ResultElementPanel<T> extends ResultPanel<T> {
         center_panel.add(date);
     }
 
-    public void addButton(ImageIcon btn, String tooltip, Runnable runnable){
+    public ResultElementPanel<T> addButton(ImageIcon btn, String tooltip, Runnable runnable){
         JButton jButton = new JButton(btn);
         jButton.setBorderPainted(false);
         jButton.setFocusable(false);
         jButton.setToolTipText(tooltip);
         jButton.addActionListener(evt -> runnable.run());
         addElementTop(jButton);
+        return this;
     }
 
     public ResultElementPanel<T> addButton(String btn, String tooltip, Runnable runnable){

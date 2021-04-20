@@ -8,6 +8,8 @@
 package fr.hedwin.db;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import fr.hedwin.db.model.MovieSortBy;
+import fr.hedwin.db.model.SerieSortBy;
 import fr.hedwin.db.object.*;
 import fr.hedwin.db.utils.CompletableFuture;
 import fr.hedwin.db.utils.Future;
@@ -32,7 +34,7 @@ public class TMDB {
 
     /**
      * <pre>Discover Movie</pre>
-     * @see fr.hedwin.db.SortBy
+     * @see MovieSortBy
      * @see Future
      * @see CompletableFuture
      * @see DbMovie.ResultsMovie
@@ -41,19 +43,45 @@ public class TMDB {
      * @param with_people list of person id separate with comma
      * @return future of ResultsMovie
      */
-    public static Future<DbMovie.ResultsMovie> discoverMovie(SortBy sortBy, String with_genres, String with_people) {
+    public static Future<DbMovie.ResultsMovie> discoverMovie(MovieSortBy sortBy, Integer year, String with_genres, String with_people) {
+        System.out.println(year);
         TmdbURL tmdbURL = new TmdbURL(TmdbURL.DISCORDER_MOVIE).addLanguage(FR);
-        if (sortBy != null && !sortBy.equals(SortBy.nothing)) tmdbURL.addParams("sort_by", sortBy.getKey());
-        if (with_genres != null) tmdbURL.addParams("with_genres", with_genres);
-        if (with_people != null) tmdbURL.addParams("with_people", with_people);
+        if (sortBy != null) tmdbURL.addParams("sort_by", sortBy.getKey());
+        if(year != null) tmdbURL.addParams("year", year);
+        if (with_genres != null && !with_genres.equals("")) tmdbURL.addParams("with_genres", with_genres);
+        if (with_people != null && !with_people.equals("")) tmdbURL.addParams("with_people", with_people);
         return CompletableFuture.async(() -> new DbMovie.ResultsMovie((page) -> ClientHttp.executeRequest(tmdbURL.editPage(page), new TypeReference<ResultsPage<DbMovie>>(){})));
     }
-    public static Future<DbMovie.ResultsMovie> discoverMovie(SortBy sortBy, List<Genre> with_genres, String with_people) {
+    public static Future<DbMovie.ResultsMovie> discoverMovie(MovieSortBy sortBy, Integer year, List<Genre> with_genres, String with_people) {
         List<String> strings = with_genres.stream().mapToInt(Genre::getId).mapToObj(String::valueOf).collect(Collectors.toList());
-        return discoverMovie(sortBy, String.join(",", strings), with_people);
+        return discoverMovie(sortBy, year, String.join(",", strings), with_people);
     }
-    public static Future<DbMovie.ResultsMovie> discoverMovie(SortBy sortBy, List<String> with_genres, List<String> with_people) {
-        return discoverMovie(sortBy, String.join(",", with_genres), String.join(",", with_people));
+    public static Future<DbMovie.ResultsMovie> discoverMovie(MovieSortBy sortBy, Integer year, List<String> with_genres, List<String> with_people) {
+        return discoverMovie(sortBy, year, String.join(",", with_genres), String.join(",", with_people));
+    }
+
+
+    /**
+     * <pre>Discover TV Série</pre>
+     * @see SerieSortBy
+     * @see Future
+     * @see CompletableFuture
+     * @see DbMovie.ResultsMovie
+     * @param sortBy check SortBy class
+     * @param with_genres list of genre id separate with comma
+     * @return future of ResultsMovie
+     */
+    public static Future<DbSerie.ResultsTVSerie> discoverSeries(SerieSortBy sortBy, Integer year, String with_genres) {
+        TmdbURL tmdbURL = new TmdbURL(TmdbURL.DISCORDER_SERIES).addLanguage(FR);
+        if (sortBy != null) tmdbURL.addParams("sort_by", sortBy.getKey());
+        if(year != null) tmdbURL.addParams("year", year);
+        if (with_genres != null && !with_genres.equals("")) tmdbURL.addParams("with_genres", with_genres);
+        System.out.println(tmdbURL.getLink());
+        return CompletableFuture.async(() -> new DbSerie.ResultsTVSerie((page) -> ClientHttp.executeRequest(tmdbURL.editPage(page), new TypeReference<ResultsPage<DbSerie>>(){})));
+    }
+    public static Future<DbSerie.ResultsTVSerie> discoverSeries(SerieSortBy sortBy, Integer year, List<Genre> with_genres) {
+        List<String> strings = with_genres.stream().mapToInt(Genre::getId).mapToObj(String::valueOf).collect(Collectors.toList());
+        return discoverSeries(sortBy, year, String.join(",", strings));
     }
 
     /**
@@ -190,14 +218,26 @@ public class TMDB {
     }
 
     /**
-     * <pre>Get Genre List</pre>
+     * <pre>Get Genre List Movie</pre>
      * @see Genre.GenreList
      * @see Future
      * @see CompletableFuture
      * @return future of GenreList
      */
-    public static Future<Genre.GenreList> getGenres(){
+    public static Future<Genre.GenreList> getGenresMovie(){
         TmdbURL tmdbURL = new TmdbURL(TmdbURL.GENRES_MOVIE).addLanguage(FR);
+        return ClientHttp.executeRequest(tmdbURL, Genre.GenreList.class);
+    }
+
+    /**
+     * <pre>Get Genre List Série</pre>
+     * @see Genre.GenreList
+     * @see Future
+     * @see CompletableFuture
+     * @return future of GenreList
+     */
+    public static Future<Genre.GenreList> getGenresSerie(){
+        TmdbURL tmdbURL = new TmdbURL(TmdbURL.GENRES_SERIES).addLanguage(FR);
         return ClientHttp.executeRequest(tmdbURL, Genre.GenreList.class);
     }
 
@@ -213,9 +253,19 @@ public class TMDB {
         return ClientHttp.executeRequest(tmdbURL, Find.class);
     }
 
-    public static List<Genre> getGenresSorted(){
+    public static List<Genre> getGenresMovieSorted(){
         try {
-            return getGenres().call().getGenres().stream()
+            return getGenresMovie().call().getGenres().stream()
+                    .sorted((g1, g2) -> Comparator.comparing(Genre::getName).compare(g1, g2)).collect(Collectors.toList());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
+
+    public static List<Genre> getGenresSerieSorted(){
+        try {
+            return getGenresSerie().call().getGenres().stream()
                     .sorted((g1, g2) -> Comparator.comparing(Genre::getName).compare(g1, g2)).collect(Collectors.toList());
         } catch (Exception e) {
             e.printStackTrace();

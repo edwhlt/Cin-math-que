@@ -8,6 +8,8 @@
 package fr.hedwin.swing.panel.utils.form;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -30,7 +32,7 @@ public class FormSingleEntry<T> extends FormEntry<T, T> {
 
     @SafeVarargs
     public FormSingleEntry(String label, T value, Function<T, String> setter, Function<String, T> getter, Function<T, Boolean> conditionOnResult, Type type, T... options){
-        super(label, value, setter, getter, t -> conditionOnResult.apply(t) && t != null, options);
+        super(label, value, setter, getter, conditionOnResult, options);
         this.type = type;
         initComponents();
     }

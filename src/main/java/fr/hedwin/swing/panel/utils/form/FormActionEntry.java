@@ -14,7 +14,17 @@ import java.util.function.Consumer;
 
 public class FormActionEntry extends FormEntry<Void, Callable> {
 
-    private final Consumer<Throwable> error;
+    private Consumer<Throwable> error;
+    private JButton applyButton;
+
+    public FormActionEntry(String label) {
+        this(label, () -> {}, throwable -> {});
+    }
+
+    public void setValue(Callable callable, Consumer<Throwable> error) {
+        super.setValue(callable);
+        this.error = error;
+    }
 
     public FormActionEntry(String label, Callable callable, Consumer<Throwable> error) {
         super(label, null, null, s -> callable, r -> true);
@@ -27,9 +37,19 @@ public class FormActionEntry extends FormEntry<Void, Callable> {
         return error;
     }
 
+    public JButton getApplyButton() {
+        return applyButton;
+    }
+
+    public void setApplyButtonText(String text) {
+        applyButton.setText(text);
+
+    }
+
     @Override
     void initComponents() {
         JButton applyButton = new JButton(getLabel());
+        this.applyButton = applyButton;
         components.add(applyButton);
         updateValue = r -> {
             applyButton.addActionListener(evt -> {

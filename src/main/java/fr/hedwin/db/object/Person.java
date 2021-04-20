@@ -27,8 +27,14 @@ public class Person extends NamedIdElement {
     @JsonProperty("birthday")
     private String birthday;
 
+    public enum Gender{ @JsonProperty("0") D("Inconnu"), @JsonProperty("1") F("Femme"), @JsonProperty("2") M("Homme"), @JsonProperty("3") I("Inconnu");
+        private String string;
+        Gender(String string) { this.string = string; }
+        public String getString() { return string; }
+    }
+
     @JsonProperty("gender")
-    private int gender;
+    private Gender gender;
 
     @JsonProperty("biography")
     private String biography;
@@ -49,7 +55,7 @@ public class Person extends NamedIdElement {
         return birthday;
     }
 
-    public int getGender() {
+    public Gender getGender() {
         return gender;
     }
 
@@ -77,6 +83,7 @@ public class Person extends NamedIdElement {
     public String toString() {
         return "Person{" +
                 "birthday='" + birthday + '\'' +
+                ", name=" + getName() +
                 ", gender=" + gender +
                 ", biography='" + biography + '\'' +
                 ", profilePath='" + profilePath + '\'' +

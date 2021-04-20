@@ -23,7 +23,7 @@ public abstract class FormEntry<T, R> {
     protected Function<T, String> setter;
     protected Function<String, R> getter;
     protected Consumer<R> updateValue;
-    private Function<R, Boolean> conditionOnResult;
+    private final Function<R, Boolean> conditionOnResult;
     protected T[] options;
     protected Supplier<R> entry;
 

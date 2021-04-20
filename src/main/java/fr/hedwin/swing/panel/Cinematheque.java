@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 
 public class Cinematheque extends JPanel {
 
-    private final Table<Movie> table;
+    private Table<Movie> table;
     private IHM ihm;
 
     public Cinematheque(IHM ihm){

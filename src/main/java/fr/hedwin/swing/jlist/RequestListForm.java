@@ -7,10 +7,13 @@
 
 package fr.hedwin.swing.jlist;
 
+import fr.hedwin.Main;
 import fr.hedwin.swing.panel.utils.form.FormActionEntry;
 import fr.hedwin.swing.panel.utils.form.FormEntry;
 import fr.hedwin.swing.panel.utils.form.Form;
 import fr.hedwin.utils.Callable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,10 +29,12 @@ public class RequestListForm {
     private String name;
     private FormActionEntry search;
 
+    private static Logger logger = LoggerFactory.getLogger(RequestListForm.class);
+
     public RequestListForm(JPanel jPanel, String name, Callable formSucces, FormEntry<?, ?>... formEntries){
         this.jPanel = jPanel;
         this.name = name;
-        this.search = new FormActionEntry("Rechercher", formSucces, e -> {});
+        this.search = new FormActionEntry("Rechercher", formSucces, e -> logger.error("Erreur formulaire de recherche :", e));
         List<FormEntry<?, ?>> list = Arrays.stream(formEntries).collect(Collectors.toCollection(LinkedList::new));
         list.add(search);
         this.form = new Form("Rechercher", list.toArray(new FormEntry[]{}));
