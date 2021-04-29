@@ -8,11 +8,27 @@
 package fr.hedwin.swing.panel.utils.form;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.awt.*;
+import java.util.function.Consumer;
 
 public class FormEntryPassword extends FormSingleEntry<String> {
 
+    private FormEntryPassword confirmed;
+
     public FormEntryPassword(String label, String value) {
         super(label, value, s -> s, s -> s);
+    }
+
+    public FormEntryPassword(String label, String value, FormEntryPassword confirmed) {
+        super(label, value, s -> s, s -> s);
+        setConfirmed(confirmed);
+    }
+
+    public void setConfirmed(FormEntryPassword confirmed) {
+        this.confirmed = confirmed;
+        setConditionOnResult(s -> s.equals(confirmed.getEntry().get()));
     }
 
     @Override
@@ -24,6 +40,27 @@ public class FormEntryPassword extends FormSingleEntry<String> {
         //return
         updateValue = r -> jPasswordField.setText(setter.apply(r));
         entry = () -> getter.apply(new String(jPasswordField.getPassword()));
+        //VERIFICATION BONNE VALEUR
+        Consumer<DocumentEvent> consumer = documentEvent -> {
+            if(conditionOnResult.apply(getEntry().get())) setOutlineColor(Color.GREEN);
+            else setOutline("error");
+        };
+        jPasswordField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent documentEvent) {
+                consumer.accept(documentEvent);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent documentEvent) {
+                consumer.accept(documentEvent);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent documentEvent) {
+                consumer.accept(documentEvent);
+            }
+        });
     }
 
 }

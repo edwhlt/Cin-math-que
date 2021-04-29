@@ -7,6 +7,8 @@
 
 package fr.hedwin.swing.panel.utils.form;
 
+import fr.hedwin.exceptions.EntryFormValueException;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.LinkedList;
@@ -23,7 +25,7 @@ public abstract class FormEntry<T, R> {
     protected Function<T, String> setter;
     protected Function<String, R> getter;
     protected Consumer<R> updateValue;
-    private final Function<R, Boolean> conditionOnResult;
+    protected Function<R, Boolean> conditionOnResult;
     protected T[] options;
     protected Supplier<R> entry;
 
@@ -31,21 +33,26 @@ public abstract class FormEntry<T, R> {
     public FormEntry(String label, T value, Function<T, String> setter, Function<String, R> getter, Function<R, Boolean> conditionOnResult, T... options){
         this.label = label;
         this.value = value;
-        this.setter = setter;
+        this.setter = t -> setter.apply(t) == null ? "" : setter.apply(t);
         this.getter = getter;
         this.conditionOnResult = conditionOnResult;
         this.options = options;
     }
 
-    public R getValue() throws Exception {
+    public R getValue() throws EntryFormValueException {
         R r = entry.get();
         if(conditionOnResult.apply(r)){
             setOutline(null);
             return r;
         }else{
             setOutline("error");
-            throw new Exception("Le champ '"+getLabel()+"' est mal renseigné !");
+            throw new EntryFormValueException("Le champ '"+getLabel()+"' est mal renseigné !");
         }
+    }
+
+    @Deprecated
+    public Supplier<R> getEntry() {
+        return entry;
     }
 
     public void setValue(R r){
@@ -54,6 +61,14 @@ public abstract class FormEntry<T, R> {
 
     public void setOutline(String value){
         components.stream().filter(JTextField.class::isInstance).map(JTextField.class::cast).forEach(c -> c.putClientProperty("JComponent.outline", value));
+    }
+
+    public void setOutlineColor(Color value){
+        components.stream().filter(JTextField.class::isInstance).map(JTextField.class::cast).forEach(c -> c.putClientProperty("JComponent.outline", value));
+    }
+
+    protected void setConditionOnResult(Function<R, Boolean> conditionOnResult) {
+        this.conditionOnResult = conditionOnResult;
     }
 
     public List<Component> getComponents() {

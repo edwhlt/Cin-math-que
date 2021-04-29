@@ -7,7 +7,7 @@
 
 package fr.hedwin.swing.panel.utils.form;
 
-import fr.hedwin.utils.Callable;
+import fr.hedwin.utils.fonctional.Callable;
 
 import javax.swing.*;
 import java.util.function.Consumer;

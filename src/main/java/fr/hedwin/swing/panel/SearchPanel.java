@@ -18,24 +18,25 @@ import fr.hedwin.db.TMDB;
 import fr.hedwin.db.object.DbMovie;
 import fr.hedwin.objects.Movie;
 import fr.hedwin.swing.IHM;
-import fr.hedwin.swing.jlist.ListCategorie;
-import fr.hedwin.swing.jlist.RequestListForm;
+import fr.hedwin.swing.other.jlist.ListCategorie;
+import fr.hedwin.swing.other.jlist.RequestListForm;
 import fr.hedwin.swing.panel.utils.form.*;
 import fr.hedwin.swing.window.FormDialog;
-import fr.hedwin.swing.panel.result.properties.ResultEnumProperties;
-import fr.hedwin.swing.panel.result.properties.ResultPanelProperties;
+import fr.hedwin.swing.panel.result.properties.ResultPanelReturn;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.*;
 
+import static fr.hedwin.utils.Utils.getPanelResult;
+
 public class SearchPanel extends JPanel {
 
     private final JList<RequestListForm> jlist;
     private final FormSingleEntry<String> nameEntry;
     private final FormSingleEntry<String> personsEntry;
-    private final FormSingleEntry<Integer> yearsEntry;
+    private final FormSingleEntry<String> yearsEntry;
     private final FormListEntry<Genre> genresMovieEntry;
     private final FormListEntry<Genre> genresSerieEntry;
     private final FormSingleEntry<MovieSortBy> movieSortByEntry;
@@ -61,7 +62,7 @@ public class SearchPanel extends JPanel {
         this.genresSerieEntry = genresMovie;
         FormSingleEntry<String> persons = new FormSingleEntry<>("ACTEUR(S)", null, s->s, s->s);
         this.personsEntry = persons;
-        FormSingleNumberEntry years = new FormSingleNumberEntry("ANNéE", null);
+        FormSingleEntry<String> years = new FormSingleEntry<>("ANNéE", null, s->s, s->s);
         this.yearsEntry = years;
         FormSingleEntry<MovieSortBy> movieSortBy = new FormSingleEntry<>("TRIER PAR", MovieSortBy.getDefault(), MovieSortBy::getName, MovieSortBy::getSortByName, s -> true, FormSingleEntry.Type.COMBOBOX, MovieSortBy.values());
         this.movieSortByEntry = movieSortBy;
@@ -122,8 +123,8 @@ public class SearchPanel extends JPanel {
     }
 
     public void generatePanel(JSplitPane parent, Future<?> result){
-        ihm.getProgressData().setVisible(true);
-        ResultPanelProperties<TmdbElement> resultPanelProperties = new ResultPanelProperties<>("Ajouter ce film à la cinémathèque", (ob) -> {
+        ihm.getProgressData().initialize();
+        ResultPanelReturn<TmdbElement> resultPanelReturn = new ResultPanelReturn<>("Ajouter ce film/série à la cinémathèque", (ob) -> {
             if(!(ob instanceof DbMovie) && !(ob instanceof DbSerie)) return;
             String title = ob instanceof DbMovie ? ((DbMovie) ob).getTitle() : ((DbSerie) ob).getName();
             FormDialog formDialog = new FormDialog(ihm, "Choisir un format", true);
@@ -142,10 +143,11 @@ public class SearchPanel extends JPanel {
             Form formFormat = new Form("Ajouter", btn_group, add);
             formFormat.setPreferredSize(new Dimension(300, 200));
             formDialog.initComponents(formFormat);
-        });
-        ResultEnumProperties.getPanelElementFuture(1, result, ihm.getProgressData(), resultPanelProperties).then(panel -> {
-            parent.setRightComponent(panel);
-            ihm.getProgressData().setVisible(false);
+        }, DbMovie.class, DbSerie.class);
+        result.then(r -> {
+            JPanel jPanel = getPanelResult(null, 1, r, ihm.getProgressData(), resultPanelReturn);
+            parent.setRightComponent(jPanel);
+            ihm.getProgressData().close();
         });
     }
 
@@ -173,7 +175,7 @@ public class SearchPanel extends JPanel {
         return personsEntry;
     }
 
-    public FormSingleEntry<Integer> getYearsEntry() {
+    public FormSingleEntry<String> getYearsEntry() {
         return yearsEntry;
     }
 

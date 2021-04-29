@@ -6,25 +6,15 @@
  :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
 
 package fr.hedwin.swing.window;
-
 import fr.hedwin.swing.panel.utils.form.Form;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class FormDialog extends JDialog {
 
-    public FormDialog(JFrame parent, String title, boolean modal, Form form) {
-        super(parent, title, modal);
-        initComponents(form);
-    }
-
-    public FormDialog(JDialog parent, boolean modal, Form form) {
-        super(parent, modal);
-        initComponents(form);
-    }
-
-    public FormDialog(JFrame parent, String title, boolean modal) {
-        super(parent, title, modal);
+    public FormDialog(Window parent, String title, boolean modal){
+        super(parent, title, modal ? Dialog.DEFAULT_MODALITY_TYPE : ModalityType.MODELESS);
     }
 
     public void initComponents(Form form){
@@ -32,6 +22,7 @@ public class FormDialog extends JDialog {
         add(form);
         pack();
         setLocationRelativeTo(null);
+        setResizable(false);
         setVisible(true);
     }
 

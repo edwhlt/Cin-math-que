@@ -119,6 +119,10 @@ public class Table<T> extends JPanel {
         return rows;
     }
 
+    public Row<T> getRow(UUID movieUUID){
+        return rows.get(movieUUID);
+    }
+
     private Runnable lastFilter;
 
     public void filter(String value, ColumnObject<T, ?> columnObject){

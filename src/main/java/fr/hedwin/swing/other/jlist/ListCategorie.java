@@ -2,12 +2,13 @@
  Copyright (c) 2021.
  Project: Projet 2A
  Author: Edwin HELET & Julien GUY
- Class: Callable.java
+ Class: ListCategorie.java
  :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
 
-package fr.hedwin.utils;
+package fr.hedwin.swing.other.jlist;
 
-@FunctionalInterface
-public interface Callable {
-    void run() throws Exception;
+public class ListCategorie extends RequestListForm{
+    public ListCategorie(String name) {
+        super(null, name, null);
+    }
 }

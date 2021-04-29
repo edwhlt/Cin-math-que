@@ -8,11 +8,11 @@
 package fr.hedwin.objects;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
-import java.util.Arrays;
-import java.util.Date;
+import java.util.*;
 
 public class Movie {
 
@@ -32,7 +32,7 @@ public class Movie {
     }
 
     @JsonProperty("id_tmdb_link")
-    private int id_tmdb_link;
+    private int idTmdbLink;
 
     @JsonProperty("nom")
     private String nom;
@@ -40,38 +40,34 @@ public class Movie {
     @JsonProperty("format")
     private Format format;
 
-    @JsonProperty("note")
-    private int note;
+    @JsonProperty("comments")
+    private Map<UUID, Comment> comments = new HashMap<>();
 
     @JsonProperty("date")
     @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     private Date date;
 
-    public Movie(int id_tmdb_link, String nom, Format numerique, Date date) {
-        this.id_tmdb_link = id_tmdb_link;
+    private Movie(){}
+
+    public Movie(int idTmdbLink, String nom, Format numerique, Date date) {
+        this.idTmdbLink = idTmdbLink;
         this.nom = nom;
         this.format = numerique;
         this.date = date;
     }
 
-    private Movie(){}
-
     public Movie(String nom, Format numerique, Date date) {
         this(-1, nom, numerique, date);
     }
 
-    public int getIdTMDBLink() {
-        return id_tmdb_link;
+    public int getIdTmdbLink() {
+        return idTmdbLink;
     }
 
     @JsonSetter("id_tmdb_link")
-    public void setIdTmdbLink(int id_tmdb_link) {
-        if(id_tmdb_link == 0) this.id_tmdb_link = -1;
-        else this.id_tmdb_link = id_tmdb_link;
-    }
-
-    public void setIdTMDBLink(int id_tmdb_link) {
-        this.id_tmdb_link = id_tmdb_link;
+    public void setIdTmdbLink(int idTmdbLink) {
+        if(idTmdbLink == 0) this.idTmdbLink = -1;
+        else this.idTmdbLink = idTmdbLink;
     }
 
     public String getNom() {
@@ -86,12 +82,25 @@ public class Movie {
         return format;
     }
 
+    public Map<UUID, Comment> getComments() {
+        return comments;
+    }
+
+    public void addComment(Comment comment){
+        comments.put(comment.getUuid(), comment);
+    }
+
+    public void removeComment(UUID commentUuid) {
+        comments.remove(commentUuid);
+    }
+
     public void setFormat(Format format) {
         this.format = format;
     }
 
+    @JsonIgnore
     public int getNote() {
-        return note;
+        return comments == null || comments.isEmpty() ? 0 : comments.values().stream().mapToInt(Comment::getNote).sum()/comments.size();
     }
 
     public Date getDate() {

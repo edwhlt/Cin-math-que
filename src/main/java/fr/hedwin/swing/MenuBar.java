@@ -17,6 +17,7 @@ import com.formdev.flatlaf.extras.FlatUIDefaultsInspector;
 import fr.hedwin.Main;
 import fr.hedwin.swing.panel.utils.table.ColumnAction;
 import fr.hedwin.swing.panel.utils.table.Row;
+import fr.hedwin.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -183,14 +184,14 @@ public class MenuBar extends JMenuBar {
     public void saveDatas(ActionEvent event){
         long d = System.currentTimeMillis();
         try {
-            Main.saveDatas();
+            Utils.saveJSON("datas.json", Main.movies);
         } catch (IOException ioException) {
             JOptionPane.showMessageDialog(ihm, "Impossible de sauvegarder les données : "+ioException.getMessage(), "Erreur de sauvegarde", JOptionPane.ERROR_MESSAGE);
             logger.error("Erreur :", ioException);
         }
         long f = System.currentTimeMillis();
         JOptionPane.showMessageDialog(ihm, "Données de la cinémathèque sauvegardées (Temps : "+(f-d)+"ms)", "Sauvegarde de la cinémathèque", JOptionPane.INFORMATION_MESSAGE);
-        logger.info("Fichier sauvegardé");
+        logger.info("Fichiers sauvegardés");
     }
 
     public void updateTheme(String path){

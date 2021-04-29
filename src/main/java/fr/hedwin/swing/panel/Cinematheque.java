@@ -12,32 +12,27 @@ import fr.hedwin.Main;
 import fr.hedwin.db.TMDB;
 import fr.hedwin.db.model.IdElement;
 import fr.hedwin.db.model.TmdbElement;
-import fr.hedwin.db.object.DbMovie;
 import fr.hedwin.db.utils.CompletableFuture;
 import fr.hedwin.db.utils.Future;
 import fr.hedwin.objects.Movie;
 import fr.hedwin.swing.IHM;
-import fr.hedwin.swing.jlist.ListCategorie;
-import fr.hedwin.swing.jlist.RequestListForm;
-import fr.hedwin.swing.panel.result.MultipleResultPanel;
 import fr.hedwin.swing.panel.result.ResultPanel;
-import fr.hedwin.swing.panel.result.properties.ResultEnumProperties;
-import fr.hedwin.swing.panel.result.properties.ResultPanelProperties;
+import fr.hedwin.swing.panel.result.properties.ResultPanelReturn;
 import fr.hedwin.swing.panel.utils.form.Form;
 import fr.hedwin.swing.panel.utils.form.FormActionEntry;
 import fr.hedwin.swing.panel.utils.form.FormSingleEntry;
 import fr.hedwin.swing.panel.utils.table.*;
+import fr.hedwin.swing.window.CommentDialog;
 import fr.hedwin.swing.window.FormDialog;
 import fr.hedwin.swing.window.ResultsDialog;
+import fr.hedwin.utils.Utils;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -51,33 +46,35 @@ public class Cinematheque extends JPanel {
         setLayout(new BorderLayout());
         Column[] columnList = new Column[]{
                 new ColumnObject<>("Nom", Movie::getNom),
-                new ColumnInteger<>("TMDB ID", Movie::getIdTMDBLink, i -> i != -1),
+                new ColumnInteger<>("TMDB ID", Movie::getIdTmdbLink, i -> i != -1),
                 new ColumnObject<>("Format", Movie::getFormat),
                 new ColumnInteger<>("Note (/100)", Movie::getNote),
                 new ColumnDate<>("Date d'ajout", new SimpleDateFormat("dd/MM/yyyy"), Movie::getDate),
                 new ColumnAction<Movie>(new FlatSVGIcon("images/suggestedRefactoringBulb_dark.svg"), "Rediger ou modifier un avis", (row, movie) -> {
+                    new CommentDialog(ihm, "Commentaires de "+movie.getNom(), true, IHM.getUUIDFromMovie(movie));
                 }),
                 new ColumnAction<Movie>(new FlatSVGIcon("images/find_dark.svg"), "Rechercher dans TMDB", (row, movie) -> {
                     ihm.getProgressData().initialize();
                     Consumer<ResultPanel<?>> openDialog = (panel) -> new ResultsDialog(ihm, movie.getNom(), true, panel).setVisible(true);
-                    if (movie.getIdTMDBLink() != -1)
-                        ResultEnumProperties.getPanelElementFuture(1, TMDB.getMovie(movie.getIdTMDBLink()), ihm.getProgressData()).then(openDialog).error((ex) -> {
-                           ResultEnumProperties.getPanelElementFuture(1, TMDB.getTvSeries(movie.getIdTMDBLink()), ihm.getProgressData()).then(openDialog).error((ex2) -> {
-                               JPanel jPanel = new JPanel();
-                               jPanel.add(new JLabel(ex.getMessage()));
-                               jPanel.add(new JLabel(ex2.getMessage()));
-                               JOptionPane.showMessageDialog(this, jPanel,
-                                       "L'identifiant "+movie.getIdTMDBLink()+" associé à "+movie.getNom()+" n'est associé à aucun film ou série", JOptionPane.WARNING_MESSAGE);
-                           });
+                    //SI LE FILM/SERIE EST ASSOCIEE A UN IDENTIFIANT THEMOVIEDB
+                    if (movie.getIdTmdbLink() != -1)
+                        TMDB.getMovie(movie.getIdTmdbLink()).then(m -> openDialog.accept(Utils.getMoviePanel(1, m, ihm.getProgressData()))).error(ex -> {
+                            TMDB.getTvSeries(movie.getIdTmdbLink()).then(s -> openDialog.accept(Utils.getSeriePanel(1, s, ihm.getProgressData()))).error(ex2 -> {
+                                JPanel jPanel = new JPanel();
+                                jPanel.add(new JLabel(ex.getMessage()));
+                                jPanel.add(new JLabel(ex2.getMessage()));
+                                JOptionPane.showMessageDialog(this, jPanel,
+                                        "L'identifiant "+movie.getIdTmdbLink()+" associé à "+movie.getNom()+" n'est associé à aucun film ou série", JOptionPane.WARNING_MESSAGE);
+                            });
                         });
                     else {
-                        Map<String, Future<?>> futureMap = new HashMap<String, Future<?>>(){{{
+                        Map<String, Future<? extends TmdbElement>> futureMap = new HashMap<String, Future<? extends TmdbElement>>(){{{
                             put("Film", TMDB.searchMovie(movie.getNom()));
                             put("Serie", TMDB.searchTvSerie(movie.getNom()));
                         }}};
-                        ResultPanelProperties<TmdbElement> resultPanelProperties = new ResultPanelProperties<>("Associer ce film", (o) -> {
+                        ResultPanelReturn<TmdbElement> resultPanelReturn = new ResultPanelReturn<>("Associer ce film", (o) -> {
                             if(o instanceof IdElement){
-                                movie.setIdTMDBLink(((IdElement) o).getId());
+                                movie.setIdTmdbLink(((IdElement) o).getId());
                                 row.update();
                             }
                         });
@@ -89,7 +86,7 @@ public class Cinematheque extends JPanel {
                             }
                         }))).then((map) -> {
                             try {
-                                openDialog.accept(new MultipleResultPanel(map, ihm.getProgressData(), resultPanelProperties));
+                                openDialog.accept(Utils.getMultipleResultPanel(map, ihm.getProgressData(), resultPanelReturn));
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -99,7 +96,7 @@ public class Cinematheque extends JPanel {
                 new ColumnAction<Movie>(new FlatSVGIcon("images/edit_dark.svg"), "Modifier le film/série", (row, movie) -> {
                     FormDialog formDialog = new FormDialog(ihm, "Modifier "+movie.getNom(), true);
                     FormSingleEntry<String> formEntrie = new FormSingleEntry<>("NAME", movie.getNom(), s->s, s->s);
-                    FormSingleEntry<Movie.Format> btn_group = new FormSingleEntry<>("FORMAT", null, Movie.Format::toString, Movie.Format::getIndice, r -> true, FormSingleEntry.Type.RADIOBUTTON, Movie.Format.values());
+                    FormSingleEntry<Movie.Format> btn_group = new FormSingleEntry<>("FORMAT", movie.getFormat(), Movie.Format::toString, Movie.Format::getIndice, Objects::nonNull, FormSingleEntry.Type.RADIOBUTTON, Movie.Format.values());
                     FormActionEntry update = new FormActionEntry("Modifier", () -> {
                         try {
                             movie.setNom(formEntrie.getValue());

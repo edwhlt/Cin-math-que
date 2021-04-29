@@ -7,10 +7,13 @@
 
 package fr.hedwin.db.object;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.hedwin.db.Results;
+import fr.hedwin.db.TMDB;
 import fr.hedwin.db.model.IdElement;
+import fr.hedwin.db.model.TmdbElement;
 import fr.hedwin.db.utils.Future;
 
 import java.util.List;
@@ -107,6 +110,16 @@ public class DbMovie extends IdElement {
         return voteAverage;
     }
 
+    @JsonIgnore
+    public Future<Videos> getVideos(){
+        return TMDB.getMovieVideos(getId());
+    }
+
+    @JsonIgnore
+    public Future<Credits> getCredits(){
+        return TMDB.getMovieCredits(getId());
+    }
+
     @Override
     public String toString() {
         return "DbMovie{" +
@@ -120,6 +133,8 @@ public class DbMovie extends IdElement {
                 ", overview='" + overview + '\'' +
                 ", releaseDate='" + releaseDate + '\'' +
                 ", title='" + title + '\'' +
-                '}';
+                ", backdropPath='" + backdropPath + '\'' +
+                ", voteAverage='" + voteAverage + '\'' +
+                "} " + super.toString();
     }
 }

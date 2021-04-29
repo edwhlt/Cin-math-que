@@ -7,8 +7,9 @@
 
 package fr.hedwin.swing.panel.result;
 
-import fr.hedwin.db.object.ResultsPage;
+import fr.hedwin.swing.IHM;
 import fr.hedwin.swing.other.LoadDataBar;
+import jdk.nashorn.internal.scripts.JD;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,9 +23,7 @@ public abstract class ResultPanel<T> extends JPanel {
 
     protected JPanel btm_panel = new JPanel();
     protected JPanel center_panel = new JPanel();
-    protected JToolBar top_panel = new JToolBar(JToolBar.HORIZONTAL){{
-        setLayout(new FlowLayout(FlowLayout.LEFT));
-    }};
+    protected JToolBar top_panel = new JToolBar(JToolBar.HORIZONTAL);
 
     public ResultPanel(T result, LoadDataBar loadDataBar) throws Exception {
         this(1, result, loadDataBar);
@@ -70,4 +69,5 @@ public abstract class ResultPanel<T> extends JPanel {
     public LoadDataBar getLoadDataBar() {
         return loadDataBar;
     }
+
 }

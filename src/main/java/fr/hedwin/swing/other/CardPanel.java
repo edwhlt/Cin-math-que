@@ -15,47 +15,87 @@ import fr.hedwin.swing.panel.result.ResultElementPanel;
 import fr.hedwin.utils.StringTraitement;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class CardPanel<T> extends JPanel {
 
     private final GridBagConstraints gbc;
     private final T t;
-    private Consumer<T> moreInfo;
+    private Map<JLabel, Runnable> entries = new HashMap<>();
+    private JToolBar toolBar = new JToolBar(JToolBar.VERTICAL);
+    private JPanel centerPanel = new JPanel();
 
-    public CardPanel(T t, Consumer<T> moreInfo){
+    public CardPanel(T t){
         this.t = t;
-        this.moreInfo = moreInfo;
         this.gbc = new GridBagConstraints();
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.LINE_START;
         initComponents();
     }
 
     private void initComponents(){
-        setLayout(new FlowLayout());
-        JButton jButton = new JButton(new FlatSVGIcon("images/informationDialog_dark.svg"));
-        jButton.addActionListener(evt -> moreInfo.accept(t));
-        add(jButton);
+        setLayout(new BorderLayout());
+        setBorder(BorderFactory.createEmptyBorder(10, 5, 5, 5));
+        centerPanel.setLayout(new GridBagLayout());
+        toolBar.setFloatable(false);
+        add(centerPanel, BorderLayout.CENTER);
+        add(toolBar, BorderLayout.WEST);
     }
 
-    public void setImage(String path){
-        JLabel img = new JLabel();
-        CompletableFuture.async(() -> TMDB.getImage(path, 350)).then(image -> img.setIcon(new ImageIcon(image)));
-        add(img);
+    private String getTextEntry(String label, String value, boolean ln){
+        return "<html><b>"+label+"</b>"+(ln ? "<br>" : " : ")+ StringTraitement.parseHTML(value, 100) +"</html>";
     }
 
-    private CardPanel<T> addElementEntry(String label, String value){
-        if(value == null) value = "Indéfinie";
-        JLabel date = new JLabel("<html><b>"+label+" </b>"+ StringTraitement.parseHTML(value, 70) +"</html>");
+    private JLabel addElementEntry(String label, String value, boolean ln){
+        JLabel date = new JLabel(getTextEntry(label, value, ln));
         date.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
-        add(date);
+        gbc.gridy = entries.size();
+        centerPanel.add(date, gbc);
+        return date;
+    }
+
+    public CardPanel<T> addElementEntryln(String label, Function<T, Object> value){
+        JLabel jLabel = addElementEntry(label, value == null ? "Indéfinie" : value.apply(t).toString().replace("\n", "<br>"), true);
+        if(value != null) entries.put(jLabel, () -> {
+            jLabel.setText(getTextEntry(label, value.apply(t).toString().replace("\n", "<br>"), true));
+        });
         return this;
     }
 
-    public CardPanel<T> addElementEntry(String label, Object value){
-        addElementEntry(label, value == null ? null : value.toString());
+    public CardPanel<T> addElementEntry(String label, Function<T, Object> value){
+        JLabel jLabel = addElementEntry(label, value == null ? "Indéfinie" : value.apply(t).toString().replace("\n", "<br>"), false);
+        if(value != null) entries.put(jLabel, () -> {
+            jLabel.setText(getTextEntry(label, value.apply(t).toString().replace("\n", "<br>"), false));
+        });
         return this;
+    }
+
+    public CardPanel<T> addButton(String label, String tooltip, Runnable runnable){
+        JButton jButton = new JButton(label);
+        jButton.setToolTipText(tooltip);
+        jButton.addActionListener(evt -> runnable.run());
+        toolBar.add(jButton);
+        return this;
+    }
+
+    public CardPanel<T> addButton(FlatSVGIcon icon, String tooltip, Runnable runnable){
+        JButton jButton = new JButton(icon);
+        jButton.setToolTipText(tooltip);
+        jButton.addActionListener(evt -> runnable.run());
+        toolBar.add(jButton);
+        return this;
+    }
+
+    public void update() {
+        for (Runnable value : entries.values()) value.run();
     }
 
 }

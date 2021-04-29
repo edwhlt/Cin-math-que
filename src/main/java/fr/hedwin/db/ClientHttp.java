@@ -14,6 +14,8 @@ import fr.hedwin.db.object.DbMovie;
 import fr.hedwin.db.object.ResultsPage;
 import fr.hedwin.db.utils.CompletableFuture;
 import fr.hedwin.db.utils.Future;
+import fr.hedwin.utils.ProgressInputStream;
+import me.tongfei.progressbar.ProgressBar;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -22,6 +24,9 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ClientHttp {
     private HttpURLConnection connexion;
@@ -36,7 +41,7 @@ public class ClientHttp {
             try {
                 return new ObjectMapper().readValue(clientHttp.getResult(), typeReference);
             } catch (JsonProcessingException e) {
-                throw new Exception("Impossible d'accèder au résultat !"+e.getMessage());
+                throw new Exception("Impossible d'accèder au résultat ! "+e.getMessage());
             }
         });
     }

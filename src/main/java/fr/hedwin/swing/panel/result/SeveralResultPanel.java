@@ -8,13 +8,16 @@
 package fr.hedwin.swing.panel.result;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import fr.hedwin.db.model.IdElement;
 import fr.hedwin.db.model.TmdbElement;
+import fr.hedwin.db.object.DbMovie;
+import fr.hedwin.db.object.DbSerie;
 import fr.hedwin.db.utils.Future;
 import fr.hedwin.db.Results;
 import fr.hedwin.db.object.ResultsPage;
+import fr.hedwin.swing.IHM;
 import fr.hedwin.swing.other.LoadDataBar;
-import fr.hedwin.swing.panel.result.properties.ResultEnumProperties;
-import fr.hedwin.swing.panel.result.properties.ResultPanelProperties;
+import fr.hedwin.swing.panel.result.properties.ResultPanelReturn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,33 +27,30 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static fr.hedwin.utils.Utils.getPanelElement;
+
 @SuppressWarnings("unchecked")
 public class SeveralResultPanel<T> extends ResultPanel<Results<T>> {
 
-    private final ResultPanelProperties<T> resultPanelProperties;
+    private MultipleResultPanel multipleResultPanel;
+    private final ResultPanelReturn<T> resultPanelReturn;
     private Map<Integer, ResultPagePanel<T>> pagePanel;
     private int actualPage;
     private JLabel pageLabel;
 
     private static Logger logger = LoggerFactory.getLogger(SeveralResultPanel.class);
 
-    public SeveralResultPanel(Results<T> result, LoadDataBar loadDataBar) throws Exception {
-        this(result, loadDataBar, null);
-    }
-
-    public SeveralResultPanel(Results<T> result, LoadDataBar loadDataBar, ResultPanelProperties<T> resultPanelProperties) throws Exception {
-        this(1, result, loadDataBar, resultPanelProperties);
-    }
-
-    public SeveralResultPanel(float fraction, Results<T> result, LoadDataBar loadDataBar, ResultPanelProperties<T> resultPanelProperties) throws Exception {
+    public SeveralResultPanel(MultipleResultPanel multipleResultPanel, float fraction, Results<T> result, LoadDataBar loadDataBar, ResultPanelReturn<T> resultPanelReturn) throws Exception {
         super(fraction, result, loadDataBar);
-        this.resultPanelProperties = resultPanelProperties;
+        this.multipleResultPanel = multipleResultPanel;
+        this.resultPanelReturn = resultPanelReturn;
 
         if(result.getTotalResults() <= 0) throw new Exception("Aucun résultat !");
-        if(resultPanelProperties != null){
-            addElementBottom(resultPanelProperties.getSuccessBtn(this::getSelectedElement));
-            addElementBottom(resultPanelProperties.getCancelBtn());
+        if(resultPanelReturn != null){
+            addElementBottom(resultPanelReturn.getSuccessBtn(this::getSelectedElement));
+            addElementBottom(resultPanelReturn.getCancelBtn());
         }
+        updateSucessEnabled();
     }
 
     @Override
@@ -60,7 +60,7 @@ public class SeveralResultPanel<T> extends ResultPanel<Results<T>> {
 
         if(!result.getResultsPage(1).call().isEmpty()){
             if(result.getTotalResults() == 1) {
-                center_panel.add(ResultEnumProperties.getPanelElement(fraction, (TmdbElement) result.getFirstPage().getResults().get(0), getLoadDataBar()), BorderLayout.CENTER);
+                center_panel.add(getPanelElement(fraction, (TmdbElement) result.getFirstPage().getResults().get(0), getLoadDataBar()), BorderLayout.CENTER);
                 getLoadDataBar().setFraction(1);
             } else openPage(1);
 
@@ -82,7 +82,7 @@ public class SeveralResultPanel<T> extends ResultPanel<Results<T>> {
     @Override
     public void onClose() {
         pagePanel.values().forEach(ResultPagePanel::onClose);
-        if(resultPanelProperties != null) resultPanelProperties.cancel();
+        if(resultPanelReturn != null) resultPanelReturn.cancel();
     }
 
     public void openPage(int page){
@@ -130,8 +130,20 @@ public class SeveralResultPanel<T> extends ResultPanel<Results<T>> {
         this.pageLabel.setText(page+"/"+result.getTotalPage());
     }
 
-    public ResultPanelProperties<T> getResultPanelProperties() {
-        return resultPanelProperties;
+    public ResultPanelReturn<T> getResultPanelReturn() {
+        return resultPanelReturn;
+    }
+
+    public void updateSucessEnabled(){
+        T t = getSelectedElement();
+        if(t == null || getResultPanelReturn() == null) {
+            if(multipleResultPanel != null) multipleResultPanel.updateSucessEnabled();
+        }
+        else if(getResultPanelReturn().isVerifiedForReturn(t)) {
+            if(t instanceof IdElement) getResultPanelReturn().setEnabledSucess(!IHM.isAlreadyAdded(((IdElement) t).getId()));
+            else getResultPanelReturn().setEnabledSucess(true);
+        }
+        else getResultPanelReturn().setEnabledSucess(false);
     }
 
     public T getSelectedElement() {

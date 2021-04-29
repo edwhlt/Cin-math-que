@@ -8,11 +8,9 @@
 package fr.hedwin.swing.panel.result;
 
 import fr.hedwin.db.model.NamedIdElement;
-import fr.hedwin.db.model.TmdbElement;
 import fr.hedwin.db.utils.CompletableFuture;
 import fr.hedwin.db.TMDB;
 import fr.hedwin.swing.other.LoadDataBar;
-import fr.hedwin.swing.panel.result.properties.ResultPanelProperties;
 import fr.hedwin.utils.StringTraitement;
 
 import javax.swing.*;
@@ -21,10 +19,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ResultElementPanel<T> extends ResultPanel<T> {
-
-    public ResultElementPanel(T result, LoadDataBar loadDataBar) throws Exception {
-        this(1, result, loadDataBar);
-    }
 
     public ResultElementPanel(float fraction, T result, LoadDataBar loadDataBar) throws Exception {
         super(fraction, result, loadDataBar);

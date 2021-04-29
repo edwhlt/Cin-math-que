@@ -16,6 +16,7 @@ import fr.hedwin.db.object.DbSerie;
 import fr.hedwin.db.utils.CompletableFuture;
 import fr.hedwin.db.utils.Future;
 import fr.hedwin.objects.Movie;
+import fr.hedwin.objects.User;
 import fr.hedwin.swing.panel.result.MultipleResultPanel;
 import fr.hedwin.swing.panel.utils.form.Form;
 import fr.hedwin.swing.panel.utils.form.FormActionEntry;
@@ -24,20 +25,22 @@ import fr.hedwin.swing.window.FormDialog;
 import fr.hedwin.swing.window.ResultsDialog;
 import fr.hedwin.swing.other.LoadDataBar;
 import fr.hedwin.swing.panel.*;
-import fr.hedwin.swing.panel.result.properties.ResultPanelProperties;
+import fr.hedwin.swing.panel.result.properties.ResultPanelReturn;
+import fr.hedwin.utils.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class IHM extends JFrame {
+
+    private static final Logger logger = LoggerFactory.getLogger(IHM.class);
 
     public static IHM INSTANCE;
     private final LoadDataBar progressData = new LoadDataBar();
@@ -45,9 +48,11 @@ public class IHM extends JFrame {
     private int notifCinematheque = 0;
     private Cinematheque cinematheque;
     private SearchPanel searchPanel;
+    private final User user;
 
-    public IHM() {
+    public IHM(User user) {
         super("Cinémathèque");
+        this.user = user;
         INSTANCE = this;
         initComponents();
     }
@@ -80,15 +85,32 @@ public class IHM extends JFrame {
         settings.setFocusable(false);
         settings.setBorderPainted(false);
 
+        JButton signout = new JButton();
+        signout.addActionListener(evt -> {
+            try {
+                Utils.saveJSON("datas.json", Main.movies);
+            } catch (IOException ioException) {
+                JOptionPane.showMessageDialog(this, ioException.getMessage(), "Erreur lors de la sauvegarde", JOptionPane.ERROR_MESSAGE);
+            }
+            dispose();
+            IHMLogin ihmLogin = new IHMLogin();
+            ihmLogin.setVisible(true);
+        });
+        signout.setIcon(new FlatSVGIcon("images/exit_dark.svg"));
+        signout.setFocusable(false);
+        signout.setBorderPainted(false);
+
         JLabel pp = new JLabel();
         //pp.setIcon(new ImageIcon(new RoundImage(getClass().getResource("/images/user_dark.svg")).generate().getScaledInstance(30, 30, Image.SCALE_DEFAULT)));
         pp.setIcon(new ImageIcon(new FlatSVGIcon("images/user_dark.svg").derive(16, 16).getImage()));
         cib.add(Box.createHorizontalGlue());
         cib.add(pp);
         cib.add(Box.createRigidArea(new Dimension(10, 0)));
-        cib.add(new JLabel("Edwin"));
+        cib.add(new JLabel(user.getName()));
         cib.add(Box.createRigidArea(new Dimension(10, 0)));
         cib.add(settings);
+        cib.add(Box.createRigidArea(new Dimension(10, 0)));
+        cib.add(signout);
 
         /*
          * ONGLETS
@@ -131,10 +153,14 @@ public class IHM extends JFrame {
         button.setIcon(new FlatSVGIcon("images/download.svg"));
         button.addActionListener(evt -> {
             JFileChooser jFileChooser = new JFileChooser();
-            int retour = jFileChooser.showOpenDialog(this);
+            int retour = jFileChooser.showSaveDialog(this);
             if (retour == JFileChooser.APPROVE_OPTION) {
-                System.out.println(jFileChooser.getSelectedFile().getName());
-                System.out.println(jFileChooser.getSelectedFile().getAbsolutePath());
+                try {
+                    Utils.saveJSON(jFileChooser.getSelectedFile().getAbsolutePath(), Main.movies);
+                } catch (IOException e) {
+                    JOptionPane.showMessageDialog(this, "Impossible de sauvegarder les données : "+e.getMessage(), "Erreur de sauvegarde", JOptionPane.ERROR_MESSAGE);
+                    logger.error("Erreur :", e);
+                }
             }
         });
         button.setFocusable(false);
@@ -186,9 +212,9 @@ public class IHM extends JFrame {
         );
         if (i == 0) {
             try {
-                Main.saveDatas();
+                Utils.saveJSON("datas.json", Main.movies);
             } catch (IOException ioException) {
-                JOptionPane.showMessageDialog(getContentPane(), ioException.getMessage(), "Erreur lors de la sauvegarde", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, ioException.getMessage(), "Erreur lors de la sauvegarde", JOptionPane.ERROR_MESSAGE);
             }
         }
         if (i != 2) {
@@ -200,16 +226,16 @@ public class IHM extends JFrame {
     public void openFormAdd() {
         FormDialog formDialog = new FormDialog(this, "Ajouter un film ou une série", true);
         FormSingleEntry<String> formEntrie = new FormSingleEntry<>("NOM", null, s->s, s->s);
-        FormSingleEntry<Movie.Format> btn_group = new FormSingleEntry<>("FORMAT", null, Movie.Format::toString, Movie.Format::getIndice, r -> true, FormSingleEntry.Type.RADIOBUTTON, Movie.Format.values());
+        FormSingleEntry<Movie.Format> btn_group = new FormSingleEntry<>("FORMAT", null, Movie.Format::toString, Movie.Format::getIndice, Objects::nonNull, FormSingleEntry.Type.RADIOBUTTON, Movie.Format.values());
         FormActionEntry add = new FormActionEntry("Ajouter", () -> {
             try {
-                Map<String, Future<?>> futureMap = new HashMap<String, Future<?>>(){{{
+                Map<String, Future<? extends TmdbElement>> futureMap = new HashMap<String, Future<? extends TmdbElement>>(){{{
                     put("Film", TMDB.searchMovie(formEntrie.getValue()));
                     put("Serie", TMDB.searchTvSerie(formEntrie.getValue()));
                 }}};
                 getProgressData().initialize();
 
-                ResultPanelProperties<TmdbElement> resultPanelProperties = new ResultPanelProperties<>("Choisir ce film", o -> {
+                ResultPanelReturn<TmdbElement> resultPanelReturn = new ResultPanelReturn<>("Choisir ce film/série", o -> {
                     try {
                         createMovie(o, btn_group);
                         formDialog.dispose();
@@ -223,7 +249,7 @@ public class IHM extends JFrame {
                     } catch (Exception e2) {
                         JOptionPane.showMessageDialog(this, e2.getMessage(), "Erreur", JOptionPane.WARNING_MESSAGE);
                     }
-                });
+                }, DbMovie.class, DbSerie.class);
 
                 CompletableFuture.async(() -> futureMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> {
                     try {
@@ -233,7 +259,7 @@ public class IHM extends JFrame {
                     }
                 }))).then((map) -> {
                     try {
-                        ResultsDialog ihmSearch = new ResultsDialog(formDialog, true, new MultipleResultPanel(map, progressData, resultPanelProperties));
+                        ResultsDialog ihmSearch = new ResultsDialog(formDialog, "Film et série trouvés", true, new MultipleResultPanel(map, progressData, resultPanelReturn));
                         ihmSearch.setVisible(true);
                     } catch (Exception e) {
                         try {
@@ -282,7 +308,11 @@ public class IHM extends JFrame {
     }
 
     public static boolean isAlreadyAdded(int id) {
-        return Main.movies.values().stream().map(Movie::getIdTMDBLink).anyMatch(i -> i == id);
+        return Main.movies.values().stream().map(Movie::getIdTmdbLink).anyMatch(i -> i == id);
+    }
+
+    public User getUser() {
+        return user;
     }
 
     public static UUID getUUIDFromMovie(Movie movie){

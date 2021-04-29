@@ -11,17 +11,13 @@ import fr.hedwin.swing.panel.result.ResultPanel;
 
 import javax.swing.*;
 
+import java.awt.*;
 import java.awt.event.*;
 
 public class ResultsDialog extends JDialog {
 
-    public <T> ResultsDialog(JFrame parent, String title, boolean modal, ResultPanel<T> futureResult) {
-        super(parent, title, modal);
-        initComponents(futureResult);
-    }
-
-    public <T> ResultsDialog(JDialog parent, boolean modal, ResultPanel<T> futureResult) {
-        super(parent, modal);
+    public <T> ResultsDialog(Window parent, String title, boolean modal, ResultPanel<T> futureResult) {
+        super(parent, title, modal ? Dialog.DEFAULT_MODALITY_TYPE : ModalityType.MODELESS);
         initComponents(futureResult);
     }
 

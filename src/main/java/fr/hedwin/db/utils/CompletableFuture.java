@@ -10,6 +10,8 @@ package fr.hedwin.db.utils;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
+import fr.hedwin.utils.fonctional.ThrowableConsumer;
+
 public class CompletableFuture<V> implements Future<V> {
 
     private Consumer<Exception> error;
@@ -25,7 +27,7 @@ public class CompletableFuture<V> implements Future<V> {
     }
 
     @Override
-    public Future<V> then(Consumer<V> consumer) {
+    public Future<V> then(ThrowableConsumer<V> consumer) {
         new Thread(() -> {
             try {
                 consumer.accept(call());
@@ -46,9 +48,8 @@ public class CompletableFuture<V> implements Future<V> {
     }
 
     @Override
-    public Future<V> thenFinally(Runnable thenFinally) {
+    public void thenFinally(Runnable thenFinally) {
         this.thenFinally = thenFinally;
-        return this;
     }
 
     @Override

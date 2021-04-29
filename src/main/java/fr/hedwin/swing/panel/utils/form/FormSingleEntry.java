@@ -10,24 +10,30 @@ package fr.hedwin.swing.panel.utils.form;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class FormSingleEntry<T> extends FormEntry<T, T> {
 
     private Type type;
 
-    public enum Type{COMBOBOX, RADIOBUTTON}
+    public enum Type{COMBOBOX, RADIOBUTTON, TEXTAREA, TEXT}
 
     public FormSingleEntry(String label, T value, Function<T, String> setter, Function<String, T> getter){
         this(label, value, setter, getter, t -> true);
     }
 
     public FormSingleEntry(String label, T value, Function<T, String> setter, Function<String, T> getter, Function<T, Boolean> conditionOnResult){
-        this(label, value, setter, getter, conditionOnResult, null);
+        this(label, value, setter, getter, conditionOnResult, Type.TEXT);
+    }
+
+    public FormSingleEntry(String label, T value, Function<T, String> setter, Function<String, T> getter, Type type){
+        this(label, value, setter, getter, t -> true, type);
     }
 
     @SafeVarargs
@@ -43,11 +49,41 @@ public class FormSingleEntry<T> extends FormEntry<T, T> {
             setMinimumSize(new Dimension(Integer.MAX_VALUE, 30));
         }});
         if(options.length == 0){
-            JTextField jTextField = new JTextField();
-            if(value != null) jTextField.setText(setter.apply(value));
-            components.add(jTextField);
-            updateValue = r -> jTextField.setText(setter.apply(r));
-            entry = () -> getter.apply(jTextField.getText());
+            JTextComponent jTextComponent;
+            if(type.equals(Type.TEXTAREA)) {
+                JTextArea jTextArea = new JTextArea(7, 20);
+                jTextArea.setLineWrap(true);
+                jTextComponent = jTextArea;
+                components.add(new JScrollPane(jTextComponent, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
+            }
+            else {
+                jTextComponent = new JTextField();
+                components.add(jTextComponent);
+            }
+            if(value != null) jTextComponent.setText(setter.apply(value));
+            updateValue = r -> jTextComponent.setText(setter.apply(r));
+            entry = () -> getter.apply(jTextComponent.getText());
+            //VERIFICATION BONNE VALEUR
+            Consumer<DocumentEvent> consumer = documentEvent -> {
+                if(conditionOnResult.apply(getEntry().get())) setOutlineColor(Color.GREEN);
+                else setOutline("error");
+            };
+            jTextComponent.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent documentEvent) {
+                    consumer.accept(documentEvent);
+                }
+
+                @Override
+                public void removeUpdate(DocumentEvent documentEvent) {
+                    consumer.accept(documentEvent);
+                }
+
+                @Override
+                public void changedUpdate(DocumentEvent documentEvent) {
+                    consumer.accept(documentEvent);
+                }
+            });
         }else{
             if(type.equals(Type.RADIOBUTTON)){
                 ButtonGroup btn_group = new ButtonGroup();

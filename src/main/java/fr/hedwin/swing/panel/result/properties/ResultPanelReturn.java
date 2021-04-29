@@ -11,26 +11,28 @@ import javax.swing.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class ResultPanelProperties<T> {
+public class ResultPanelReturn<T> {
 
     private final Consumer<T> onSucess;
     private final Runnable onCancel;
     private final JButton successBtn;
     private final JButton cancelBtn;
+    private final Class<?>[] cls;
 
-    public ResultPanelProperties(String successTitle, Consumer<T> onSucess){
-        this(successTitle, onSucess, null, null);
+    public ResultPanelReturn(String successTitle, Consumer<T> onSucess, Class<?>... cl){
+        this(successTitle, onSucess, null, null, cl);
     }
 
-    public ResultPanelProperties(String cancelTitle, Runnable onCancel){
-        this(null, null, cancelTitle, onCancel);
+    public ResultPanelReturn(String cancelTitle, Runnable onCancel, Class<?>... cl){
+        this(null, null, cancelTitle, onCancel, cl);
     }
 
-    public ResultPanelProperties(String successTitle, Consumer<T> onSucess, String cancelTitle, Runnable onCancel){
+    public ResultPanelReturn(String successTitle, Consumer<T> onSucess, String cancelTitle, Runnable onCancel, Class<?>... cl){
         this.onSucess = onSucess;
         this.successBtn = new JButton(successTitle);
         this.onCancel = onCancel;
         this.cancelBtn = new JButton(cancelTitle);
+        this.cls = cl;
     }
 
     public JButton getSuccessBtn(Supplier<T> getReturn){
@@ -63,6 +65,13 @@ public class ResultPanelProperties<T> {
 
     public void cancel(){
         if(onCancel != null) onCancel.run();
+    }
+
+    public <E> boolean isVerifiedForReturn(E t){
+        for (Class<?> cl : cls) {
+            if(cl.isInstance(t)) return true;
+        }
+        return false;
     }
 
 }

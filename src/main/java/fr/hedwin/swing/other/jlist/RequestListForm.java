@@ -5,13 +5,13 @@
  Class: RequestListForm.java
  :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
 
-package fr.hedwin.swing.jlist;
+package fr.hedwin.swing.other.jlist;
 
-import fr.hedwin.Main;
+import fr.hedwin.swing.IHM;
 import fr.hedwin.swing.panel.utils.form.FormActionEntry;
 import fr.hedwin.swing.panel.utils.form.FormEntry;
 import fr.hedwin.swing.panel.utils.form.Form;
-import fr.hedwin.utils.Callable;
+import fr.hedwin.utils.fonctional.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +34,10 @@ public class RequestListForm {
     public RequestListForm(JPanel jPanel, String name, Callable formSucces, FormEntry<?, ?>... formEntries){
         this.jPanel = jPanel;
         this.name = name;
-        this.search = new FormActionEntry("Rechercher", formSucces, e -> logger.error("Erreur formulaire de recherche :", e));
+        this.search = new FormActionEntry("Rechercher", formSucces, e -> {
+            JOptionPane.showMessageDialog(IHM.INSTANCE, e.getMessage(), "Erreur", JOptionPane.WARNING_MESSAGE);
+            logger.error("Erreur formulaire de recherche :", e);
+        });
         List<FormEntry<?, ?>> list = Arrays.stream(formEntries).collect(Collectors.toCollection(LinkedList::new));
         list.add(search);
         this.form = new Form("Rechercher", list.toArray(new FormEntry[]{}));

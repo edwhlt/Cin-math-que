@@ -21,22 +21,16 @@ import static com.teamdev.jxbrowser.engine.RenderingMode.HARDWARE_ACCELERATED;
 
 public class TrailerDialog extends JDialog {
 
-    public TrailerDialog(JFrame parent, String youtubeId){
-        super(parent, true);
+    public static void launchTrailer(Window parent, String title, String youtubeId){
+        new TrailerDialog(parent, title, youtubeId);
+    }
+
+    public TrailerDialog(Window parent, String title, String youtubeId){
+        super(parent, title, Dialog.DEFAULT_MODALITY_TYPE);
         generate(youtubeId);
     }
 
-    public TrailerDialog(JDialog parent, String youtubeId){
-        super(parent, true);
-        generate(youtubeId);
-    }
-
-    public TrailerDialog(JComponent parent, String youtubeId){
-        super(SwingUtilities.getWindowAncestor(parent));
-        generate(youtubeId);
-    }
-
-    public void generate(String youtubeId){
+    private void generate(String youtubeId){
         Engine engins = Engine.newInstance(EngineOptions.newBuilder(HARDWARE_ACCELERATED).licenseKey("1BNDHFSC1FYQKGPO8IJFOA0L7A3M3RG2RWOTTKK6Y5Y42M1HEEX0MQ10ZJ5XGAF82HYGZJ").build());
         Browser browser = engins.newBrowser();
         browser.navigation().loadUrl("https://www.youtube.com/embed/"+youtubeId);

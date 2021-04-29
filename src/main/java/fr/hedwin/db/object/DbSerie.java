@@ -92,4 +92,21 @@ public class DbSerie extends NamedIdElement {
     public String getOriginalName() {
         return originalName;
     }
+
+    @Override
+    public String toString() {
+        return "DbSerie{" +
+                "posterPath='" + posterPath + '\'' +
+                ", popularity=" + popularity +
+                ", backdropPath='" + backdropPath + '\'' +
+                ", voteAverage=" + voteAverage +
+                ", overview='" + overview + '\'' +
+                ", firstAirDate='" + firstAirDate + '\'' +
+                ", originCountry=" + originCountry +
+                ", genreIds=" + genreIds +
+                ", originalLanguage='" + originalLanguage + '\'' +
+                ", voteCount=" + voteCount +
+                ", originalName='" + originalName + '\'' +
+                "} " + super.toString();
+    }
 }

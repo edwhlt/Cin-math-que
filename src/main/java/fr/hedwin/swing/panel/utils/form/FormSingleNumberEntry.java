@@ -16,7 +16,7 @@ public class FormSingleNumberEntry extends FormSingleEntry<Integer> {
     }
 
     public FormSingleNumberEntry(String label, Integer value, Function<Integer, Boolean> conditionOnResult) {
-        this(label, value, conditionOnResult, null);
+        this(label, value, conditionOnResult, Type.TEXT);
     }
 
     public FormSingleNumberEntry(String label, Integer value, Function<Integer, Boolean> conditionOnResult, Type type, Integer... options) {
@@ -26,7 +26,7 @@ public class FormSingleNumberEntry extends FormSingleEntry<Integer> {
             }catch (NumberFormatException ex){
                 return null;
             }
-        }, conditionOnResult, type, options);
+        }, i -> i != null && conditionOnResult.apply(i), type, options);
     }
 
 }
