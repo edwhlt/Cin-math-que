@@ -42,7 +42,7 @@ public class FormEntryPassword extends FormSingleEntry<String> {
         entry = () -> getter.apply(new String(jPasswordField.getPassword()));
         //VERIFICATION BONNE VALEUR
         Consumer<DocumentEvent> consumer = documentEvent -> {
-            if(conditionOnResult.apply(getEntry().get())) setOutlineColor(Color.GREEN);
+            if(conditionOnResult.apply(getEntry().get())) setOutlineColor(Color.decode("#98C379"));
             else setOutline("error");
         };
         jPasswordField.getDocument().addDocumentListener(new DocumentListener() {

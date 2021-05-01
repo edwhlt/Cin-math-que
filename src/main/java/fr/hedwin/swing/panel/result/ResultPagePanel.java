@@ -10,6 +10,8 @@ package fr.hedwin.swing.panel.result;
 import fr.hedwin.db.object.ResultsPage;
 import fr.hedwin.swing.other.LoadDataBar;
 import fr.hedwin.utils.StringTraitement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,6 +23,8 @@ import static fr.hedwin.utils.Utils.getTitleElement;
 
 @SuppressWarnings("unchecked")
 public class ResultPagePanel<T> extends ResultPanel<ResultsPage<T>> {
+
+    private static final Logger logger = LoggerFactory.getLogger(ResultPagePanel.class);
 
     private JTabbedPane tabbedPane;
     private SeveralResultPanel<T> severalResultPanel;
@@ -43,7 +47,7 @@ public class ResultPagePanel<T> extends ResultPanel<ResultsPage<T>> {
             try {
                 tabbedPane.addTab(title, getPanelElement(lastFraction + fraction*(float) (resultsPage.indexOf(m)+1) / resultsPage.size(), m, loadDataBar));
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Impossible de chager un panel depuis '"+title+"'", e);
             }
         });
 

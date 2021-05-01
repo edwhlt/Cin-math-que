@@ -7,16 +7,12 @@
 
 package fr.hedwin;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.formdev.flatlaf.IntelliJTheme;
 import com.formdev.flatlaf.extras.FlatInspector;
 import com.formdev.flatlaf.extras.FlatUIDefaultsInspector;
-import fr.hedwin.objects.Comment;
 import fr.hedwin.objects.User;
 import fr.hedwin.swing.IHMLogin;
 import fr.hedwin.objects.Movie;
-import fr.hedwin.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +30,7 @@ public class Main {
 
     public static void main(String[] args) throws URISyntaxException, IOException {
         try{
-            IntelliJTheme.install(Main.class.getClassLoader().getResourceAsStream("edwin-dark.theme.json"));
+            IntelliJTheme.install(Main.class.getClassLoader().getResourceAsStream("edwin-red-dark.theme.json"));
             FlatInspector.install("ctrl shift alt X");
             FlatUIDefaultsInspector.install("ctrl shift alt Y");
             JFrame.setDefaultLookAndFeelDecorated(true);

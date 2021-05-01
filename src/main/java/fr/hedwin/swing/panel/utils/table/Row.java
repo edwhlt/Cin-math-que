@@ -66,6 +66,10 @@ public class Row<T> {
         refreshRow();
     }
 
+    public void setVisible(boolean visible){
+        componentMap.values().forEach(e -> e.setVisible(visible));
+    }
+
     private void refreshRow(){
         table.contentPanel.repaint();
         table.contentPanel.revalidate();

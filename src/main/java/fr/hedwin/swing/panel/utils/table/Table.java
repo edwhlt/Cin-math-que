@@ -103,16 +103,16 @@ public class Table<T> extends JPanel {
         return this;
     }
 
-    public int getRowSpace() {
-        return rowSpace;
-    }
-
     public void addRow(UUID uuid, T element) {
         Row<T> row = new Row<>(this, element, columnList);
         row.add(rows.size()+1);
         rows.put(uuid, row);
         if(lastFilter != null) lastFilter.run();
         if(lastSort != null) lastSort.run();
+    }
+
+    public int getRowSpace() {
+        return rowSpace;
     }
 
     public Map<UUID, Row<T>> getRows() {
@@ -126,14 +126,7 @@ public class Table<T> extends JPanel {
     private Runnable lastFilter;
 
     public void filter(String value, ColumnObject<T, ?> columnObject){
-        Map<UUID, Row<T>> map = rows.entrySet().stream().filter(e -> columnObject.getValueString(e.getValue().getElement()).toLowerCase().contains(value.toLowerCase()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x, y) -> y, LinkedHashMap::new));
-        rows.values().forEach(Row::remove);
-        int i = 1;
-        for(Row<T> row : map.values()){
-            row.add(i);
-            i++;
-        }
+        rows.values().forEach(r -> r.setVisible(columnObject.getValueString(r.getElement()).toLowerCase().contains(value.toLowerCase())));
         lastFilter = () -> filter(value, columnObject);
     }
 

@@ -10,12 +10,11 @@ package fr.hedwin.db;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.hedwin.db.object.DbMovie;
-import fr.hedwin.db.object.ResultsPage;
 import fr.hedwin.db.utils.CompletableFuture;
 import fr.hedwin.db.utils.Future;
-import fr.hedwin.utils.ProgressInputStream;
-import me.tongfei.progressbar.ProgressBar;
+import fr.hedwin.swing.IHM;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -24,17 +23,16 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class ClientHttp {
     private HttpURLConnection connexion;
     private String reception;
 
+    private static final Logger logger = LoggerFactory.getLogger(ClientHttp.class);
 
     public static <T> Future<T> executeRequest(TmdbURL adresse, TypeReference<T> typeReference) {
         return CompletableFuture.async(() -> {
+            logger.info("HTTP Request: "+adresse.getLink());
             ClientHttp clientHttp = new ClientHttp();
             clientHttp.connection(adresse.getLink(), "GET");
             clientHttp.executeRequest();
@@ -48,7 +46,7 @@ public class ClientHttp {
 
     public static <T> Future<T> executeRequest(TmdbURL adresse, Class<T> typeReference) {
         return CompletableFuture.async(() -> {
-            System.out.println(adresse.getLink());
+            logger.info("HTTP Request: "+adresse.getLink());
             ClientHttp clientHttp = new ClientHttp();
             clientHttp.connection(adresse.getLink(), "GET");
             clientHttp.executeRequest();

@@ -13,9 +13,9 @@ import fr.hedwin.db.utils.CompletableFuture;
 import fr.hedwin.db.utils.Future;
 import fr.hedwin.swing.panel.result.ResultElementPanel;
 import fr.hedwin.utils.StringTraitement;
+import javafx.scene.layout.Border;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +45,7 @@ public class CardPanel<T> extends JPanel {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder(10, 5, 5, 5));
         centerPanel.setLayout(new GridBagLayout());
+        centerPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
         toolBar.setFloatable(false);
         add(centerPanel, BorderLayout.CENTER);
         add(toolBar, BorderLayout.WEST);

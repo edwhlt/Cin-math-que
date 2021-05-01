@@ -157,7 +157,7 @@ public class MenuBar extends JMenuBar {
                 }
             });
         }catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Impossible de chager les thèmes", e);
         }
         mnuOptions.add(mnuTheme);
 

@@ -15,13 +15,8 @@ import java.util.UUID;
 
 public class CommentDialog extends JDialog {
 
-    public CommentDialog(JDialog parent, String title, boolean modal, UUID movie) {
-        super(parent, modal);
-        initComponents(movie);
-    }
-
-    public CommentDialog(JFrame parent, String title, boolean modal, UUID movie) {
-        super(parent, title, modal);
+    public CommentDialog(Window parent, String title, boolean modal, UUID movie) {
+        super(parent, title, modal ? Dialog.DEFAULT_MODALITY_TYPE : ModalityType.MODELESS);
         initComponents(movie);
     }
 

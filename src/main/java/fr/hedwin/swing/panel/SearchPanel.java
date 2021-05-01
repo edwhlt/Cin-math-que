@@ -20,6 +20,7 @@ import fr.hedwin.objects.Movie;
 import fr.hedwin.swing.IHM;
 import fr.hedwin.swing.other.jlist.ListCategorie;
 import fr.hedwin.swing.other.jlist.RequestListForm;
+import fr.hedwin.swing.panel.result.ResultPanel;
 import fr.hedwin.swing.panel.utils.form.*;
 import fr.hedwin.swing.window.FormDialog;
 import fr.hedwin.swing.panel.result.properties.ResultPanelReturn;
@@ -136,7 +137,6 @@ public class SearchPanel extends JPanel {
                     IHM.INSTANCE.addNotifCinematheque();
                     formDialog.dispose();
                 } catch (Exception e) {
-                    e.printStackTrace();
                     JOptionPane.showMessageDialog(this, e.getMessage(), "Erreur", JOptionPane.WARNING_MESSAGE);
                 }
             }, e -> {});
@@ -145,7 +145,7 @@ public class SearchPanel extends JPanel {
             formDialog.initComponents(formFormat);
         }, DbMovie.class, DbSerie.class);
         result.then(r -> {
-            JPanel jPanel = getPanelResult(null, 1, r, ihm.getProgressData(), resultPanelReturn);
+            ResultPanel<?> jPanel = getPanelResult(null, 1, r, ihm.getProgressData(), resultPanelReturn);
             parent.setRightComponent(jPanel);
             ihm.getProgressData().close();
         });

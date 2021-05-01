@@ -273,7 +273,8 @@ public class IHM extends JFrame {
                     }
                 });
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Impossible d'ajouter un film/série", e);
+                Utils.errorPopup(this, "Impossible d'ajouter un film/série", e);
             }
         }, e -> {});
         Form form = new Form("Ajouter", formEntrie, btn_group, add);

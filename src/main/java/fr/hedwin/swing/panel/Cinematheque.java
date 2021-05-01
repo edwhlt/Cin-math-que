@@ -12,6 +12,8 @@ import fr.hedwin.Main;
 import fr.hedwin.db.TMDB;
 import fr.hedwin.db.model.IdElement;
 import fr.hedwin.db.model.TmdbElement;
+import fr.hedwin.db.object.DbMovie;
+import fr.hedwin.db.object.DbSerie;
 import fr.hedwin.db.utils.CompletableFuture;
 import fr.hedwin.db.utils.Future;
 import fr.hedwin.objects.Movie;
@@ -26,6 +28,8 @@ import fr.hedwin.swing.window.CommentDialog;
 import fr.hedwin.swing.window.FormDialog;
 import fr.hedwin.swing.window.ResultsDialog;
 import fr.hedwin.utils.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -37,6 +41,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class Cinematheque extends JPanel {
+
+    private static final Logger logger = LoggerFactory.getLogger(Cinematheque.class);
 
     private Table<Movie> table;
     private IHM ihm;
@@ -77,7 +83,7 @@ public class Cinematheque extends JPanel {
                                 movie.setIdTmdbLink(((IdElement) o).getId());
                                 row.update();
                             }
-                        });
+                        }, DbMovie.class, DbSerie.class);
                         CompletableFuture.async(() -> futureMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> {
                             try {
                                 return e.getValue().call();
@@ -88,7 +94,7 @@ public class Cinematheque extends JPanel {
                             try {
                                 openDialog.accept(Utils.getMultipleResultPanel(map, ihm.getProgressData(), resultPanelReturn));
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                logger.error("Impossible de chager un multiple result panel", e);
                             }
                         });
                     }

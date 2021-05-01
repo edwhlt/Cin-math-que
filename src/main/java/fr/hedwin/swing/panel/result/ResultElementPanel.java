@@ -77,20 +77,6 @@ public class ResultElementPanel<T> extends ResultPanel<T> {
         return this;
     }
 
-    public ResultElementPanel<T> setBackdrop(String path) {
-        JLabel img = new JLabel();
-        CompletableFuture.async(() -> TMDB.getImage(path, 700)).then(image -> img.setIcon(new ImageIcon(image))).thenFinally(() -> {
-            try {
-                Image image = TMDB.getImage(path, null);
-                img.setIcon(new ImageIcon(image.getScaledInstance(700, 400, Image.SCALE_SMOOTH)));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-        center_panel.add(img, 0);
-        return this;
-    }
-
     public ResultElementPanel<T> setImage(String path){
         JLabel img = new JLabel();
         CompletableFuture.async(() -> TMDB.getImage(path, 200)).then(image -> img.setIcon(new ImageIcon(image)));

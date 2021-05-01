@@ -13,6 +13,9 @@ import fr.hedwin.db.model.SerieSortBy;
 import fr.hedwin.db.object.*;
 import fr.hedwin.db.utils.CompletableFuture;
 import fr.hedwin.db.utils.Future;
+import fr.hedwin.swing.IHM;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -21,6 +24,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class TMDB {
+
+    private static final Logger logger = LoggerFactory.getLogger(TMDB.class);
 
     /**
      * <pre>Français</pre>
@@ -44,7 +49,6 @@ public class TMDB {
      * @return future of ResultsMovie
      */
     public static Future<DbMovie.ResultsMovie> discoverMovie(MovieSortBy sortBy, String year, String with_genres, String with_people) {
-        System.out.println(year);
         TmdbURL tmdbURL = new TmdbURL(TmdbURL.DISCORDER_MOVIE).addLanguage(FR);
         if (sortBy != null) tmdbURL.addParams("sort_by", sortBy.getKey());
         if(year != null) tmdbURL.addParams("year", year);
@@ -76,7 +80,6 @@ public class TMDB {
         if (sortBy != null) tmdbURL.addParams("sort_by", sortBy.getKey());
         if(year != null) tmdbURL.addParams("year", year);
         if (with_genres != null && !with_genres.equals("")) tmdbURL.addParams("with_genres", with_genres);
-        System.out.println(tmdbURL.getLink());
         return CompletableFuture.async(() -> new DbSerie.ResultsTVSerie((page) -> ClientHttp.executeRequest(tmdbURL.editPage(page), new TypeReference<ResultsPage<DbSerie>>(){})));
     }
     public static Future<DbSerie.ResultsTVSerie> discoverSeries(SerieSortBy sortBy, String year, List<Genre> with_genres) {
@@ -258,7 +261,7 @@ public class TMDB {
             return getGenresMovie().call().getGenres().stream()
                     .sorted((g1, g2) -> Comparator.comparing(Genre::getName).compare(g1, g2)).collect(Collectors.toList());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Impossible de charger les genrs de film", e);
         }
         return new ArrayList<>();
     }
@@ -268,7 +271,7 @@ public class TMDB {
             return getGenresSerie().call().getGenres().stream()
                     .sorted((g1, g2) -> Comparator.comparing(Genre::getName).compare(g1, g2)).collect(Collectors.toList());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Impossible de charger les genrs de série", e);
         }
         return new ArrayList<>();
     }

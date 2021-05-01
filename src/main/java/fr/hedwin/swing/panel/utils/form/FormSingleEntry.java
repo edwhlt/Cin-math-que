@@ -65,7 +65,7 @@ public class FormSingleEntry<T> extends FormEntry<T, T> {
             entry = () -> getter.apply(jTextComponent.getText());
             //VERIFICATION BONNE VALEUR
             Consumer<DocumentEvent> consumer = documentEvent -> {
-                if(conditionOnResult.apply(getEntry().get())) setOutlineColor(Color.GREEN);
+                if(conditionOnResult.apply(getEntry().get())) setOutlineColor(Color.decode("#98C379"));
                 else setOutline("error");
             };
             jTextComponent.getDocument().addDocumentListener(new DocumentListener() {

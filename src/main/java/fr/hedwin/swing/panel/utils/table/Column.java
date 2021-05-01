@@ -9,5 +9,4 @@ package fr.hedwin.swing.panel.utils.table;
 
 public interface Column {
     String getName();
-
 }

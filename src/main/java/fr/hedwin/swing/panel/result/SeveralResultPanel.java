@@ -116,7 +116,7 @@ public class SeveralResultPanel<T> extends ResultPanel<Results<T>> {
                         //On met la fraction à 1 parceque qu'on charge plus tard
                         pagePanel.put(page, new ResultPagePanel<>(1, this, result, getLoadDataBar()));
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error("Impossible de créer un page panel", e);
                     }
                     getLoadDataBar().close();
                     //le panel a été ajouté dans la map donc on peut appellé la méthode où le if sera executé
