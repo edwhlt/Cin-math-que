@@ -27,9 +27,11 @@ public class Table<T> extends JPanel {
     public JPanel contentPanel = new JPanel();
     private boolean isGenerated = false;
     private final int rowSpace;
+    private final int rowSize;
 
-    public Table(int rowSpace, Column... column){
+    public Table(int rowSpace, int rowSize, Column... column){
         this.rowSpace = rowSpace;
+        this.rowSize = rowSize;
         addColumns(column);
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -113,6 +115,10 @@ public class Table<T> extends JPanel {
 
     public int getRowSpace() {
         return rowSpace;
+    }
+
+    public int getRowSize() {
+        return rowSize;
     }
 
     public Map<UUID, Row<T>> getRows() {

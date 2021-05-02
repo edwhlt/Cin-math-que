@@ -173,6 +173,7 @@ public class IHM extends JFrame {
         btns.add(button);
         add(btns);
 
+        IHMLogin.INSTANCE.getLoadDataBar().close();
         setResizable(true);
         pack();
         setLocationRelativeTo(null);
@@ -268,8 +269,6 @@ public class IHM extends JFrame {
                         } catch (Exception exception) {
                             JOptionPane.showMessageDialog(this, exception.getMessage(), "Erreur", JOptionPane.WARNING_MESSAGE);
                         }
-                    } finally {
-                        getProgressData().close();
                     }
                 });
             } catch (Exception e) {

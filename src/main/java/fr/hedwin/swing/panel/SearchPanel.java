@@ -24,6 +24,9 @@ import fr.hedwin.swing.panel.result.ResultPanel;
 import fr.hedwin.swing.panel.utils.form.*;
 import fr.hedwin.swing.window.FormDialog;
 import fr.hedwin.swing.panel.result.properties.ResultPanelReturn;
+import fr.hedwin.utils.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -33,6 +36,8 @@ import java.util.*;
 import static fr.hedwin.utils.Utils.getPanelResult;
 
 public class SearchPanel extends JPanel {
+
+    private static final Logger logger = LoggerFactory.getLogger(SearchPanel.class);
 
     private final JList<RequestListForm> jlist;
     private final FormSingleEntry<String> nameEntry;
@@ -147,7 +152,9 @@ public class SearchPanel extends JPanel {
         result.then(r -> {
             ResultPanel<?> jPanel = getPanelResult(null, 1, r, ihm.getProgressData(), resultPanelReturn);
             parent.setRightComponent(jPanel);
-            ihm.getProgressData().close();
+        }).error(e -> {
+            logger.error("Aucun résultat", e);
+            Utils.errorPopup(this, "Aucun résultat", e);
         });
     }
 

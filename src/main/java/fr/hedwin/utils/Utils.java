@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import fr.hedwin.Main;
 import fr.hedwin.db.Results;
 import fr.hedwin.db.TMDB;
 import fr.hedwin.db.model.MovieSortBy;
@@ -35,6 +36,8 @@ import fr.hedwin.swing.window.ResultsDialog;
 import fr.hedwin.swing.window.TableDialog;
 import fr.hedwin.swing.window.TrailerDialog;
 import jdk.nashorn.internal.scripts.JD;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -45,10 +48,11 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 public class Utils {
+    private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
     public static <T> void loadJSON(String filename, TypeReference<T> tTypeReference, Consumer<T> reader) throws IOException {
         File f = new File(filename);
-        if(f.exists())  reader.accept(new ObjectMapper().readValue(new BufferedReader(new InputStreamReader(new FileInputStream(f))), tTypeReference));
+        if(f.exists()) reader.accept(new ObjectMapper().readValue(new BufferedReader(new InputStreamReader(new FileInputStream(f))), tTypeReference));
     }
 
     public static <T> void saveJSON(String filename, T object) throws IOException {
@@ -92,16 +96,19 @@ public class Utils {
                 .addElementEntry("Description :", dbMovie.getOverview())
                 .addElementEntry("Date de sortie :", dbMovie.getReleaseDate());
         resultElementPanel.addButton(new FlatSVGIcon("images/recording_2_dark.svg"), "Toute les vidéos", () -> {
+            loadDataBar.initialize();
             dbMovie.getVideos()
                     .then(videos -> openVideos(resultElementPanel, "Vidéo de "+dbMovie.getTitle(), videos))
                     .error(e -> errorPopup(resultElementPanel, "Erreur vidéo", e));
         });
         resultElementPanel.addButton(new FlatSVGIcon("images/users_dark.svg"), "Voir les acteurs/actrices", () -> {
+            loadDataBar.initialize();
             dbMovie.getCredits()
                     .then(credits -> openCasting(resultElementPanel, "Casting de "+dbMovie.getTitle(), credits))
                     .error(e -> errorPopup(resultElementPanel, "Erreur casting", e));
         });
         resultElementPanel.addButton("Genres", "Afficher les genres", () -> {
+            loadDataBar.initialize();
             TMDB.getMovie(dbMovie.getId())
                     .then(movie -> openGenres(resultElementPanel, "Genres de "+movie.getTitle(), movie.getGenres()))
                     .error(e -> errorPopup(resultElementPanel, "Erreur genre", e));
@@ -131,6 +138,7 @@ public class Utils {
                 .addElementEntry("Description :", dbSerie.getOverview())
                 .addElementEntry("Date de sortie :", dbSerie.getFirstAirDate());
         resultElementPanel.addButton(new FlatSVGIcon("images/recording_2_dark.svg"), "Voir la bande d'annonce", () -> {
+            loadDataBar.initialize();
             TMDB.getTvSeriesVideos(dbSerie.getId())
                     .then(videos -> openVideos(resultElementPanel, "Vidéos de "+dbSerie.getName(), videos))
                     .error(e -> errorPopup(resultElementPanel, "Erreur vidéo", e));
@@ -154,8 +162,9 @@ public class Utils {
                     new TrailerDialog(jDialog, video.getName(), video.getKey());
                 })
         };
-        Table<Videos.Video> table = new Table<Videos.Video>(30, columns).generate();
+        Table<Videos.Video> table = new Table<Videos.Video>(30, 40, columns).generate();
         videos.getVideoList().forEach(video -> table.addRow(UUID.randomUUID(), video));
+        panel.getLoadDataBar().close();
         jDialog.initComponents(table);
     }
 
@@ -180,8 +189,9 @@ public class Utils {
                     IHM.INSTANCE.selectedTab(1);
                 })
         };
-        Table<Genre> table = new Table<Genre>(30, columns).generate();
+        Table<Genre> table = new Table<Genre>(30, 40, columns).generate();
         genreList.forEach(genre -> table.addRow(UUID.randomUUID(), genre));
+        panel.getLoadDataBar().close();
         jDialog.initComponents(table);
     }
 
@@ -204,8 +214,9 @@ public class Utils {
                     IHM.INSTANCE.selectedTab(1);
                 })
         };
-        Table<Cast> table = new Table<Cast>(30, columns).generate();
+        Table<Cast> table = new Table<Cast>(30, 40, columns).generate();
         credits.getCast().forEach(cast -> table.addRow(UUID.randomUUID(), cast));
+        panel.getLoadDataBar().close();
         jDialog.initComponents(table);
     }
 

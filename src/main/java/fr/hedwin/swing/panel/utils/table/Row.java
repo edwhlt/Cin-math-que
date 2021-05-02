@@ -7,10 +7,14 @@
 
 package fr.hedwin.swing.panel.utils.table;
 
+import fr.hedwin.utils.StringTraitement;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+
+import static fr.hedwin.utils.Utils.getTitleElement;
 
 public class Row<T> {
 
@@ -26,7 +30,7 @@ public class Row<T> {
         columnList.forEach(column -> {
             if(column instanceof ColumnObject) {
                 ColumnObject<T, ?> columnString = (ColumnObject<T, ?>) column;
-                componentMap.put(column, new JLabel(columnString.getValueString(element)));
+                componentMap.put(column, new JLabel(getCellText(columnString.getValueString(element))));
             }else if(column instanceof ColumnAction){
                 ColumnAction<T> columnAction = (ColumnAction<T>) column;
                 JButton btn = new JButton(columnAction.getName(), columnAction.getIcon());
@@ -56,8 +60,10 @@ public class Row<T> {
         refreshRow();
     }
 
+    @SuppressWarnings("unchecked")
     public void update(){
-        componentMap.entrySet().stream().filter(e -> e.getValue() instanceof JLabel).forEach(e -> ((JLabel) e.getValue()).setText(((ColumnObject<T, ?>) e.getKey()).getValueString(element)));
+        componentMap.entrySet().stream().filter(e -> e.getValue() instanceof JLabel)
+                .forEach(e -> ((JLabel) e.getValue()).setText(getCellText(((ColumnObject<T, ?>) e.getKey()).getValueString(element))));
         refreshRow();
     }
 
@@ -73,6 +79,10 @@ public class Row<T> {
     private void refreshRow(){
         table.contentPanel.repaint();
         table.contentPanel.revalidate();
+    }
+
+    private String getCellText(String value){
+        return "<html><div style=\"text-align: center;\">"+ StringTraitement.parseHTML(value, table.getRowSize())+"</div></html>";
     }
 
     public Map<Column, JComponent> getComponentMap() {

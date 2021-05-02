@@ -24,10 +24,9 @@ import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -211,30 +210,11 @@ public class MenuBar extends JMenuBar {
 
     private List<String> getResourceFiles(Pattern pattern) throws IOException {
         List<String> filenames = new ArrayList<>();
-
-        try (InputStream in = getResourceAsStream()) {
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
-                String resource;
-
-                while ((resource = br.readLine()) != null) {
-                    if(pattern.matcher(resource).matches()) filenames.add(resource);
-                }
-            }
-        }
-
+        filenames.add("edwin-dark.theme.json");
+        filenames.add("edwin-red-dark.theme.json");
+        filenames.add("solarized-light.theme.json");
         return filenames;
     }
-
-    private InputStream getResourceAsStream() {
-        final InputStream in = getContextClassLoader().getResourceAsStream("");
-
-        return in == null ? getClass().getResourceAsStream("") : in;
-    }
-
-    private ClassLoader getContextClassLoader() {
-        return Thread.currentThread().getContextClassLoader();
-    }
-
 
 
 }

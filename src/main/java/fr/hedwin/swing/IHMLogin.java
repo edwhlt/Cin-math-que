@@ -9,6 +9,7 @@ package fr.hedwin.swing;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import fr.hedwin.Main;
+import fr.hedwin.db.utils.CompletableFuture;
 import fr.hedwin.objects.Comment;
 import fr.hedwin.objects.Movie;
 import fr.hedwin.objects.User;
@@ -32,9 +33,17 @@ public class IHMLogin extends JFrame {
 
     private static Logger logger = LoggerFactory.getLogger(IHMLogin.class);
 
+    private final LoadDataBar loadDataBar = new LoadDataBar();
+    public static IHMLogin INSTANCE;
+
     public IHMLogin(){
         super("Connexion");
+        this.INSTANCE = this;
         initComponents();
+    }
+
+    public LoadDataBar getLoadDataBar() {
+        return loadDataBar;
     }
 
     public void initComponents() {
@@ -42,45 +51,58 @@ public class IHMLogin extends JFrame {
         setIconImage(icon);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
-        try {
-            Utils.loadJSON("users.json", new TypeReference<Map<UUID, User>>() {}, users -> Main.users = users);
-        }catch (Exception e){
-
-        }
 
         FormSingleEntry<String> name = new FormSingleEntry<>("IDENTIFIANT", null, s->s, s->s);
         FormEntryPassword pass = new FormEntryPassword("MOT_DE_PASSE", null);
         FormActionEntry login = new FormActionEntry("CONNEXION");
         login.setValue(() -> {
-            User user = null;
-            for (User u : Main.users.values()) {
-                if(u.getUsername().equals(name.getValue()) && u.getPassword().equals(pass.getValue())) user = u;
-            }
-            if(user == null) throw new Exception("Identifiant ou mot de passe incorrect !");
-            //OUVERTURE DE LA FENETRE
+            loadDataBar.initialize();
+            CompletableFuture.async(() -> {
+                if(Main.users.isEmpty()){
+                    try {
+                        Utils.loadJSON("users.json", new TypeReference<Map<UUID, User>>() {}, users -> Main.users = users);
+                    }catch (Exception e){
+                        logger.error("Impossible de charger les utilisateurs ! ", e);
+                    }
+                }
+                User user = null;
+                for (User u : Main.users.values()) {
+                    if(u.getUsername().equals(name.getValue()) && u.getPassword().equals(pass.getValue())) user = u;
+                }
+                if(user == null) throw new Exception("Identifiant ou mot de passe incorrect !");
+                //OUVERTURE DE LA FENETRE
 
-            IHM ihm = new IHM(user);
-            ihm.setVisible(true);
-            dispose();
+                IHM ihm = new IHM(user);
+                //CHARGEMENT DES DONNEES
+                Utils.loadJSON("datas.json", new TypeReference<Map<UUID, Movie>>() {}, movies -> Main.movies = movies);
+                Main.movies.forEach(ihm.getCinematheque().getTable()::addRow);
+                return ihm;
+            }).then(ihm -> {
+                ihm.setVisible(true);
+                dispose();
+            }).error(e -> {
+                name.setOutline("error");
+                pass.setOutline("error");
+                loadDataBar.close();
+                JOptionPane.showMessageDialog(this, e.getMessage(), e.getMessage(), JOptionPane.WARNING_MESSAGE);
+                logger.error("Erreur connection : ", e);
+            });
+        }, (e) -> {});
 
-            //CHARGEMENT DES DONNEES
-            Utils.loadJSON("datas.json", new TypeReference<Map<UUID, Movie>>() {}, movies -> Main.movies = movies);
-            Main.movies.forEach(ihm.getCinematheque().getTable()::addRow);
 
-        }, (e) -> {
-            name.setOutline("error");
-            pass.setOutline("error");
-            JOptionPane.showMessageDialog(this, e.getMessage(), e.getMessage(), JOptionPane.WARNING_MESSAGE);
-            logger.error("Erreur connection : ", e);
-        });
         FormActionEntry singin = new FormActionEntry("INSCRIPTION", () -> {
             IHMRegister ihmRegister = new IHMRegister(this);
             ihmRegister.setVisible(true);
             setVisible(false);
         }, (e) -> {});
+
+
         Form form = new Form("Login", name, pass, login, singin);
         form.setPreferredSize(new Dimension(250, 200));
-        add(form);
+        add(new JPanel(new BorderLayout()){{
+            add(loadDataBar, BorderLayout.NORTH);
+            add(form, BorderLayout.CENTER);
+        }});
         pack();
         setLocationRelativeTo(null);
         setVisible(true);

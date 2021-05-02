@@ -94,7 +94,7 @@ public class Cinematheque extends JPanel {
                             try {
                                 openDialog.accept(Utils.getMultipleResultPanel(map, ihm.getProgressData(), resultPanelReturn));
                             } catch (Exception e) {
-                                logger.error("Impossible de chager un multiple result panel", e);
+                                logger.error("Impossible de charger un multiple result panel", e);
                             }
                         });
                     }
@@ -125,7 +125,7 @@ public class Cinematheque extends JPanel {
                     }
                 })
         };
-        table = new Table<Movie>(40, columnList).generate();
+        table = new Table<Movie>(40, 40, columnList).generate();
         add(table, BorderLayout.CENTER);
     }
 
