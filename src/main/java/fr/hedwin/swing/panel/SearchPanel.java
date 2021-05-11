@@ -80,8 +80,8 @@ public class SearchPanel extends JPanel {
                 new RequestListForm(formPanel, "Titre de film", () -> generatePanel(jSplitPane, TMDB.searchMovie(name.getValue())), name),
                 new RequestListForm(formPanel, "Titre de Série", () -> generatePanel(jSplitPane, TMDB.searchTvSerie(name.getValue())), name),
                 new RequestListForm(formPanel, "Nom d'acteur", () -> generatePanel(jSplitPane, TMDB.searchPerson(name.getValue())), name),
-                new RequestListForm(formPanel, "Recherche companies", () -> {}),
-                new RequestListForm(formPanel, "Recherche multiple", () -> {}),
+                new RequestListForm(formPanel, "Recherche company", () -> {}),
+                new RequestListForm(formPanel, "Recherche collection", () -> {}),
                 new ListCategorie("Récupérer"),
                 new RequestListForm(formPanel, "Id de film", () -> generatePanel(jSplitPane, TMDB.getMovie(Integer.parseInt(name.getValue()))), name),
                 new RequestListForm(formPanel, "Id d'acteur", () -> generatePanel(jSplitPane, TMDB.getPerson(Integer.parseInt(name.getValue()))), name),
@@ -152,8 +152,10 @@ public class SearchPanel extends JPanel {
         result.then(r -> {
             ResultPanel<?> jPanel = getPanelResult(null, 1, r, ihm.getProgressData(), resultPanelReturn);
             parent.setRightComponent(jPanel);
+            ihm.getProgressData().close();
         }).error(e -> {
             logger.error("Aucun résultat", e);
+            ihm.getProgressData().close();
             Utils.errorPopup(this, "Aucun résultat", e);
         });
     }

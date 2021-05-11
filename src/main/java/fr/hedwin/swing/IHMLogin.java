@@ -42,10 +42,6 @@ public class IHMLogin extends JFrame {
         initComponents();
     }
 
-    public LoadDataBar getLoadDataBar() {
-        return loadDataBar;
-    }
-
     public void initComponents() {
         Image icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/images/icon.png"));
         setIconImage(icon);
@@ -78,6 +74,7 @@ public class IHMLogin extends JFrame {
                 Main.movies.forEach(ihm.getCinematheque().getTable()::addRow);
                 return ihm;
             }).then(ihm -> {
+                loadDataBar.close();
                 ihm.setVisible(true);
                 dispose();
             }).error(e -> {

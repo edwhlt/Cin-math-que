@@ -26,6 +26,7 @@ import fr.hedwin.swing.window.ResultsDialog;
 import fr.hedwin.swing.other.LoadDataBar;
 import fr.hedwin.swing.panel.*;
 import fr.hedwin.swing.panel.result.properties.ResultPanelReturn;
+import fr.hedwin.utils.RoundImage;
 import fr.hedwin.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -173,7 +174,6 @@ public class IHM extends JFrame {
         btns.add(button);
         add(btns);
 
-        IHMLogin.INSTANCE.getLoadDataBar().close();
         setResizable(true);
         pack();
         setLocationRelativeTo(null);
@@ -270,9 +270,11 @@ public class IHM extends JFrame {
                             JOptionPane.showMessageDialog(this, exception.getMessage(), "Erreur", JOptionPane.WARNING_MESSAGE);
                         }
                     }
+                    getProgressData().close();
                 });
             } catch (Exception e) {
                 logger.error("Impossible d'ajouter un film/série", e);
+                getProgressData().close();
                 Utils.errorPopup(this, "Impossible d'ajouter un film/série", e);
             }
         }, e -> {});

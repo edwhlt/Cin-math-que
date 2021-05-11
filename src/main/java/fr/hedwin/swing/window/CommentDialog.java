@@ -22,7 +22,7 @@ public class CommentDialog extends JDialog {
 
     public void initComponents(UUID movie){
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        add(new CommentsPanel(movie));
+        add(new CommentsPanel(this, movie));
         pack();
         setLocationRelativeTo(null);
         setVisible(true);

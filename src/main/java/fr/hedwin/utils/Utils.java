@@ -168,7 +168,8 @@ public class Utils {
         jDialog.initComponents(table);
     }
 
-    public static <T> void openGenres(ResultPanel<T> panel, String title, List<Genre> genreList){
+    public static <T> void openGenres(ResultPanel<T> panel, String title, List<Genre> genreList) throws ResultException {
+        if(genreList.isEmpty()) throw new ResultException("Aucun genres disponible");
         TableDialog jDialog = new TableDialog(SwingUtilities.getWindowAncestor(panel), title, true);
         Column[] columns = {
                 new ColumnObject<>("ID", Genre::getId), new ColumnObject<>("Name", Genre::getName),

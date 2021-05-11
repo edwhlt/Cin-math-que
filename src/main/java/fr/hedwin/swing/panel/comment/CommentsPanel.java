@@ -26,12 +26,14 @@ import java.util.*;
 
 public class CommentsPanel extends JPanel {
 
+    private CommentDialog commentDialog;
     private final Movie movie;
     private final UUID movieUuid;
     private final Collection<Comment> commentList;
     private final Box centerPanel = Box.createVerticalBox();
 
-    public CommentsPanel(UUID movieUuid){
+    public CommentsPanel(CommentDialog commentDialog, UUID movieUuid){
+        this.commentDialog = commentDialog;
         this.movie = Main.movies.get(movieUuid);
         this.movieUuid = movieUuid;
         this.commentList = movie.getComments().values();
@@ -43,7 +45,7 @@ public class CommentsPanel extends JPanel {
 
         JToolBar jToolBar = new JToolBar(JToolBar.HORIZONTAL);
         JButton jButton = new JButton("Ajouter un commentaire");
-        jButton.addActionListener(evt -> addComment());
+        jButton.addActionListener(evt -> addCommentButton());
         jToolBar.add(jButton);
         add(jToolBar, BorderLayout.NORTH);
 
@@ -56,11 +58,8 @@ public class CommentsPanel extends JPanel {
         setPreferredSize(new Dimension(700, 400));
     }
 
-    public void addComment(){
-        Window window = SwingUtilities.getWindowAncestor(this);
-        FormDialog formDialog;
-        if(window instanceof CommentDialog) formDialog = new FormDialog(((CommentDialog) window), "Ajouter un commentaire au film "+movie.getNom(), true);
-        else formDialog = new FormDialog(IHM.INSTANCE, "Ajouter un commentaire au film "+movie.getNom(), true);
+    private void addCommentButton(){
+        FormDialog formDialog = new FormDialog(commentDialog, "Ajouter un commentaire au film "+movie.getNom(), true);
         FormSingleEntry<String> formEntrie = new FormSingleEntry<>("TITLE", "C'est un super film !!", s->s, s->s);
         FormSingleNumberEntry note = new FormSingleNumberEntry("NOTE (entre 0 et 100)", 0, i -> i >= 0 && i <= 100);
         FormSingleEntry<String> formEntrieComment = new FormSingleEntry<>("COMMENTAIRE", null, s->s, s->s, FormSingleEntry.Type.TEXTAREA);
@@ -88,9 +87,8 @@ public class CommentsPanel extends JPanel {
         cardPanel.addElementEntry("Note", Comment::getNote);
         cardPanel.addElementEntryln("Commentaire", Comment::getContent);
         if(comment.getUser().equals(IHM.INSTANCE.getUser())) {
-            Window window = SwingUtilities.getWindowAncestor(this);
             cardPanel.addButton(new FlatSVGIcon("images/edit_dark.svg"), "Modifier mon commentaire", () -> {
-                FormDialog formDialog = new FormDialog(window, "Modifier votre commentaire sur "+movie.getNom(), true);
+                FormDialog formDialog = new FormDialog(commentDialog, "Modifier votre commentaire sur "+movie.getNom(), true);
                 FormSingleEntry<String> formEntrie = new FormSingleEntry<>("TITLE", comment.getTitle(), s->s, s->s);
                 FormSingleNumberEntry note = new FormSingleNumberEntry("NOTE (entre 0 et 100)", comment.getNote(), i -> i >= 0 && i <= 100);
                 FormSingleEntry<String> formEntrieComment = new FormSingleEntry<>("COMMENTAIRE", comment.getContent(), s->s, s->s, FormSingleEntry.Type.TEXTAREA);
@@ -101,13 +99,13 @@ public class CommentsPanel extends JPanel {
                     IHM.INSTANCE.getCinematheque().getTable().getRow(movieUuid).update();
                     cardPanel.update();
                     formDialog.dispose();
-                }, e -> JOptionPane.showMessageDialog(window, e.getMessage(), e.getMessage(), JOptionPane.WARNING_MESSAGE));
+                }, e -> JOptionPane.showMessageDialog(formDialog, e.getMessage(), e.getMessage(), JOptionPane.WARNING_MESSAGE));
                 Form form = new Form("Modifier", formEntrie, note, formEntrieComment, send);
                 form.setPreferredSize(new Dimension(500, 350));
                 formDialog.initComponents(form);
             });
             cardPanel.addButton(new FlatSVGIcon("images/remove_dark.svg"), "Supprimer mon commentaire", () -> {
-                int r = JOptionPane.showConfirmDialog(window, "Etes-vous sur de vouloir supprimer votre commentaire ?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                int r = JOptionPane.showConfirmDialog(commentDialog, "Etes-vous sur de vouloir supprimer votre commentaire ?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                 if (r == JOptionPane.YES_OPTION) {
                     movie.removeComment(comment.getUuid());
                     Arrays.stream(centerPanel.getComponents()).filter(c -> c == jCard).forEach(centerPanel::remove);
